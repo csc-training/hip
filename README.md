@@ -1,1 +1,1 @@
-# hip
+# Repository about HIP training
