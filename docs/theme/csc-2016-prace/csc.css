@@ -1,0 +1,583 @@
+/* CSC colors
+ *  (main)
+ *   magenta:   #830051
+ *   teal:      #006778
+ *   grey:      #5e6a71
+ *
+ *  (extra)
+ *   green:     #7dc242
+ *   orange:    #ff5800
+ *   purple:    #ea1d77
+ *   turquoise: #00c7b2
+ *   dark blue: #002f5f
+ *   blue:      #0082bb
+ */
+:root {
+  --csc-magenta:   #830051;
+  --csc-teal:      #006778;
+  --csc-grey:      #5e6a71;
+  --csc-green:     #7dc242;
+  --csc-orange:    #ff5800;
+  --csc-purple:    #ea1d77;
+  --csc-turquoise: #00c7b2;
+  --csc-dark-blue: #002f5f;
+  --csc-blue:      #0082bb;
+  --csc-highlight: #ffc0b0;
+}
+/* Screen geometry + base size for text */
+:root {
+  --xsize:  1920px;
+  --ysize:  1080px;
+  --xmargin:  74px;
+  --ymargin:  84px;
+  --fontsize: 50px;
+}
+/* Fonts */
+:root {
+  --csc-font-family: 'Corbel', 'Noto Sans', 'Cantarell', sans-serif;
+  --csc-code-font-family: 'Consolas', 'Inconsolata', 'Source Code Pro', monospace;
+}
+
+/*********************************************
+ * GLOBAL STYLES
+ *********************************************/
+body {
+  background-color: black;
+}
+.slide-background {
+  background: url("img/normal.png");
+  background-size: contain;
+}
+
+.reveal {
+  font-family: var(--csc-font-family);
+  font-size:   var(--fontsize);
+  color:       var(--csc-grey);
+  font-weight: normal;
+}
+.reveal .slides {
+  text-align:  left;
+  line-height: 1.4;
+}
+.reveal .slides > section,
+.reveal .slides > section > section {
+  padding:     0;
+}
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal p,
+.reveal ul,
+.reveal ol,
+.reveal dl,
+.reveal table,
+.reveal pre,
+.reveal figure,
+.reveal video {
+  margin-left:  var(--xmargin);
+  margin-right: var(--xmargin);
+  max-width:    calc(var(--xsize) - 2 * var(--xmargin));
+}
+.reveal p {
+  margin-top: 1ex;
+}
+.reveal .slides > section:before {
+  content:    "";
+  display:    block;
+  margin-top: var(--ymargin);
+}
+
+/*********************************************
+ * HEADERS
+ *********************************************/
+.reveal h1, .reveal h2, .reveal h3 {
+  font-weight: normal;
+  line-height: 1.1;
+  text-align:  left;
+  font-weight: bold;
+}
+.reveal h1 {
+  font-size: 1.2em;
+  color:     var(--csc-teal);
+}
+.reveal h2 {
+  font-size: 1.1em;
+  padding-top: 1ex;
+}
+.reveal h3 {
+  font-size:   1em;
+  padding-top: 1ex;
+}
+.reveal .slides > section h1:first-child {
+  padding-bottom: 1.7em;
+}
+.reveal .slides > section h2:first-child,
+.reveal .slides > section h3:first-child,
+.reveal .slides > section h1:first-child + p,
+.reveal .slides > section h1:first-child + h2,
+.reveal .slides > section h1:first-child + h3,
+.reveal .column h2:first-child,
+.reveal .column h3:first-child {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/*********************************************
+ * OTHER
+ *********************************************/
+
+/* Ensure certain elements are never larger than the slide itself */
+.reveal img,
+.reveal video,
+.reveal iframe {
+  max-width: 95%;
+  max-height: 95%;
+}
+
+/* General formatting */
+.reveal strong, b {
+  font-weight: bold;
+}
+.reveal em {
+  font-style: italic;
+}
+.reveal sup {
+  vertical-align: super;
+}
+.reveal sub {
+  vertical-align: sub;
+}
+.reveal small {
+  font-size: 0.7em;
+}
+
+/*********************************************
+ * DOUBLE COLUMN LAYOUT
+ *********************************************/
+.reveal .column {
+  width: 49%;
+}
+.reveal .column:first-of-type {
+  float: left;
+  margin-right: 1%;
+}
+.reveal .column:last-of-type {
+  float: right;
+  margin-left: 1%;
+}
+.reveal .column:first-of-type ul,
+.reveal .column:first-of-type ol,
+.reveal .column:first-of-type dl,
+.reveal .column:first-of-type p,
+.reveal .column:first-of-type h2,
+.reveal .column:first-of-type h3,
+.reveal .column:first-of-type pre,
+.reveal .column:first-of-type table,
+.reveal .column:first-of-type figure,
+.reveal .column:first-of-type video {
+  margin-right: 0;
+}
+.reveal .column:last-of-type ul,
+.reveal .column:last-of-type ol,
+.reveal .column:last-of-type dl,
+.reveal .column:last-of-type p,
+.reveal .column:last-of-type h2,
+.reveal .column:last-of-type h3,
+.reveal .column:last-of-type pre,
+.reveal .column:last-of-type table,
+.reveal .column:last-of-type figure,
+.reveal .column:last-of-type video {
+  margin-left: 0;
+}
+
+/*********************************************
+ * LISTS
+ *********************************************/
+.reveal ol,
+.reveal dl,
+.reveal ul {
+  display: inline-block;
+}
+.reveal ol {
+  list-style-type: decimal;
+}
+.reveal ul {
+  list-style-type: disc;
+}
+.reveal ul ul {
+  list-style-type: circle;
+}
+.reveal .slides > section > ul > li,
+.reveal .slides > section > ol > li {
+  margin-bottom: 1ex;
+}
+.reveal .slides > section > dl > dt {
+  margin-top: 1ex;
+}
+.reveal .slides > section > dl > dt:first-child {
+  margin-top: 0;
+}
+.reveal ul ul,
+.reveal ul ol,
+.reveal ol ol,
+.reveal ol ul,
+.reveal ul dl,
+.reveal ol dl {
+  display: block;
+  margin-left: 0.5em;
+}
+.reveal li {
+  margin-left:  1em;
+  margin-right: 0;
+  margin-bottom: 0;
+}
+.reveal li li {
+  font-size: 0.9em;
+}
+.reveal li p {
+  margin-left: 0;
+}
+/* description list */
+.reveal dt {
+  font-family: var(--csc-code-font-family);
+  font-weight: bold;
+}
+.reveal dd {
+  margin-left: 1em;
+}
+.reveal dd dl {
+  margin-left: 0;
+  margin-right: 0;
+}
+.reveal ul dl dd,
+.reveal ol dl dd,
+.reveal dd dl dd {
+  font-size: 0.8em;
+}
+.reveal dl p:first-child {
+  margin-top: 0;
+}
+.reveal dd p {
+  margin-left: 0;
+}
+.reveal .split-definition dd dl,
+.reveal .split-def-2 dd dl {
+  column-count: 2;
+  column-width: calc(0.5 * (var(--xsize) - 2 * var(--xmargin)) - 1em);
+}
+.reveal .split-def-3 dd dl {
+  column-count: 3;
+  column-width: calc(0.33 * (var(--xsize) - 2 * var(--xmargin)) - 1em);
+}
+.reveal .split-def-3 dd dl dt {
+  font-size: 0.9em;
+}
+.reveal .split-def-3 dd dl dd {
+  font-size: 0.7em;
+}
+
+
+/*********************************************
+ * CODE
+ *********************************************/
+.reveal div.sourceCode {
+  margin: 0.1em 0;
+}
+.reveal pre {
+  display:       block;
+  margin-top:    2px;
+  margin-bottom: 1ex;
+  font-size:     0.7em;
+  line-height:   1.2;
+  word-wrap:     break-word;
+  border:        2px solid;
+}
+.reveal pre,
+.reveal code {
+  font-family: var(--csc-code-font-family);
+}
+.reveal pre code {
+  display:    block;
+  padding:    5px;
+  overflow:   auto;
+  max-height: calc(0.735 * var(--ysize));
+  word-wrap:  normal;
+  white-space: pre;
+}
+.reveal code {
+  white-space: pre-wrap;
+}
+.reveal p code {
+  padding-left:  0.1em;
+  padding-right: 0.1em;
+}
+.reveal code.input {
+  color: var(--csc-orange);
+}
+.reveal code.output {
+  color: var(--csc-blue);
+}
+.reveal code.ghost {
+  color: transparent;
+}
+.reveal mark {
+  background-color: var(--csc-highlight);
+}
+
+/*********************************************
+ * TABLES
+ *********************************************/
+.reveal table {
+  margin-bottom: 1ex;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.reveal table th {
+  font-weight: bold;
+}
+.reveal table th,
+.reveal table td {
+  padding: 0.2em 0.5em 0.2em 0.5em;
+}
+.reveal table th[align="center"],
+.reveal table td[align="center"] {
+  text-align: center;
+}
+.reveal table th[align="right"],
+.reveal table td[align="right"] {
+  text-align: right;
+}
+.reveal table th[align="left"],
+.reveal table td[align="left"] {
+  text-align: left;
+}
+/* cell highlight */
+.reveal table strong em,
+.reveal table b em {
+  color: var(--csc-orange);
+  font-style: normal;
+  font-weight: normal;
+}
+/* default style w/ only some horisontal lines */
+.reveal table thead {
+  border-top: 4px solid;
+  border-bottom: 2px solid;
+}
+.reveal table tbody {
+  border-bottom: 4px solid;
+}
+/* alternative style w/ color accents */
+.reveal .table-colour table th,
+.reveal .table-colour table td:first-child {
+  color: var(--csc-blue);
+  font-weight: normal;
+}
+.reveal .table-colour table strong, b {
+  color: var(--csc-blue);
+  font-weight: normal;
+}
+/* alternative style w/ visible cells in colour */
+.reveal .table-grid table {
+  border-collapse: separate;
+  border-spacing: 0.1ex;
+}
+.reveal .table-grid table th,
+.reveal .table-grid table td {
+  padding: 0.1em 0.5em 0.1em 0.5em;
+  background-color: var(--csc-blue);
+  color: white;
+}
+.reveal .table-grid table thead,
+.reveal .table-grid table tbody {
+  border: none;
+}
+/* alternative style w/out any extra styling */
+.reveal .table-none table thead,
+.reveal .table-none table tbody {
+  border: none;
+}
+.reveal .table-none table th {
+  font-weight: normal;
+}
+.reveal .table-none table strong em,
+.reveal .table-none table b em {
+  color: var(--csc-grey);
+  font-style: italic;
+  font-weight: bold;
+}
+
+/*********************************************
+ * LINKS
+ *********************************************/
+.reveal a {
+  color: #2a76dd;
+  text-decoration: none;
+  -webkit-transition: color .15s ease;
+  -moz-transition: color .15s ease;
+  transition: color .15s ease; }
+
+.reveal a:hover {
+  color: #6ca0e8;
+  text-shadow: none;
+  border: none; }
+
+.reveal .roll span:after {
+  color: #fff;
+  background: #1a53a1; }
+
+/*********************************************
+ * IMAGES
+ *********************************************/
+.reveal section img {
+  border: 0;
+  box-shadow: none;
+}
+.reveal section img.border {
+  border: 4px solid #222;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+.reveal section img.center {
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.reveal a img {
+  -webkit-transition: all .15s linear;
+  -moz-transition: all .15s linear;
+  transition: all .15s linear;
+}
+.reveal a:hover img {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: #2a76dd;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.55);
+}
+
+/*********************************************
+ * NAVIGATION CONTROLS
+ *********************************************/
+.reveal .controls .navigate-left,
+.reveal .controls .navigate-left.enabled {
+  border-right-color: #2a76dd; }
+
+.reveal .controls .navigate-right,
+.reveal .controls .navigate-right.enabled {
+  border-left-color: #2a76dd; }
+
+.reveal .controls .navigate-up,
+.reveal .controls .navigate-up.enabled {
+  border-bottom-color: #2a76dd; }
+
+.reveal .controls .navigate-down,
+.reveal .controls .navigate-down.enabled {
+  border-top-color: #2a76dd; }
+
+.reveal .controls .navigate-left.enabled:hover {
+  border-right-color: #6ca0e8; }
+
+.reveal .controls .navigate-right.enabled:hover {
+  border-left-color: #6ca0e8; }
+
+.reveal .controls .navigate-up.enabled:hover {
+  border-bottom-color: #6ca0e8; }
+
+.reveal .controls .navigate-down.enabled:hover {
+  border-top-color: #6ca0e8; }
+
+/*********************************************
+ * PROGRESS BAR
+ *********************************************/
+.reveal .progress {
+  background: rgba(0, 0, 0, 0.2);
+}
+.reveal .progress span {
+  background: #2a76dd;
+  -webkit-transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
+  -moz-transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
+  transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985);
+}
+
+/*********************************************
+ * CSC SPECIAL SLIDES
+ *********************************************/
+.reveal .title-slide h1, .reveal .title-slide p {
+  margin-left: calc(0.291 * var(--xsize));
+  text-align:  left;
+  color:       #ffffff;
+}
+.reveal .slides > section.title-slide h1:first-child {
+  padding-bottom: 1ex;
+}
+.reveal .title-slide h1 {
+  margin-top:  calc(0.412 * var(--ysize));
+  font-size:   1.4em;
+  font-weight: bold;
+  line-height: 1.2;
+}
+.reveal .title-slide p {
+  font-size: 0.6em;
+}
+
+.reveal .section-slide h1 {
+  margin-top:  calc(0.412 * var(--ysize));
+}
+.reveal .slides > section.section-slide h1:first-child {
+  padding-bottom: 1ex;
+}
+.reveal .section-slide p {
+  font-size: 0.8em;
+}
+
+.reveal .author-slide h1,
+.reveal .author-slide p,
+.reveal .author-slide div {
+  margin-left: calc(0.24 * var(--xsize));
+  text-align: left;
+}
+.reveal .slides > section.author-slide h1:first-child {
+  padding-bottom: 1.4em;
+}
+.reveal .author-slide h1 {
+  margin-top:  calc(0.58 * var(--ysize));
+  font-size:   0.6em;
+  font-weight: bold;
+}
+.reveal .author-slide p,
+.reveal .author-slide div {
+  padding-bottom: 1.4em;
+  font-size:      0.5em;
+}
+.reveal .author-slide img {
+  position: absolute;
+  width: calc(0.142 * var(--xsize));
+  top:   calc(0.578 * var(--ysize));
+  left:  calc(0.073 * var(--xsize));
+  border: 0;
+}
+
+/*********************************************
+ * PDF printing
+ *********************************************/
+.reveal .slides .pdf-page > section h1:first-child {
+  padding-bottom: 1.7em;
+}
+.reveal .slides .pdf-page > section h2:first-child,
+.reveal .slides .pdf-page > section h3:first-child,
+.reveal .slides .pdf-page > section h1:first-child + h2,
+.reveal .slides .pdf-page > section h1:first-child + h3,
+.reveal .column .pdf-page h2:first-child,
+.reveal .column .pdf-page h3:first-child {
+  padding-top: 0;
+}
+.reveal .slides .pdf-page > section:before {
+  content: "";
+  display: block;
+  margin-top: var(--ymargin);
+}
+
+.reveal .slides .pdf-page > section.title-slide h1:first-child {
+  padding-bottom: 1ex;
+}
+.reveal .slides .pdf-page > section.author-slide h1:first-child {
+  padding-bottom: 1.4em;
+}
