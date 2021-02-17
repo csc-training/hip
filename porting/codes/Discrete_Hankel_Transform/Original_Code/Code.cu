@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <gsl/gsl_errno.h>
-#include <gsl/gsl_spline.h>
+//#include <gsl/gsl_errno.h>
+//#include <gsl/gsl_spline.h>
 // rm *.txt a.out*;nvcc -O2 -Xptxas -v -arch=sm_30 Code.cu -lgsl -lgslcblas; optirun --no-xorg ./a.out
 // rm *.txt a.out*;nvcc -O2 -Xptxas -v -arch=sm_35 Code.cu -lgsl -lgslcblas; ./a.out
 
