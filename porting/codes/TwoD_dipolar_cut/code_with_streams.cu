@@ -12,7 +12,7 @@
 /*
 module load cuda
 module load hdf5
-nvcc -lcurand -ldf5 code_with_streams.cu
+nvcc -lcurand -lhdf5 code_with_streams.cu
 ./a.out -i
 */
 #include <stdio.h>
