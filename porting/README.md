@@ -70,6 +70,7 @@ hipcub
 hiprand
 hipsparse
 `
+**The hiprand library seems to be missing on Puhti.**
 
 ## Use hipfort for Fortran codes
 
