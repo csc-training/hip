@@ -11,4 +11,4 @@
 #SBATCH --gres=gpu:v100:1
 
 
-srun ./saxpy
+time srun ./saxpy
