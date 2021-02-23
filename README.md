@@ -1,4 +1,3 @@
-# Repository about HIP training
 # HIP 101 Porting CUDA codes to HIP
 ### 26 February 2021
 
@@ -62,6 +61,8 @@ Clone the Git repository of the training:
 
 ```bash
 $ git clone https://github.com/csc-training/hip.git
+cd hip
+export rootdir=$PWD
 ```
 
 ### Exercise: SAXPY CUDA
@@ -134,11 +135,18 @@ Check the files out_* and error_*
 The error output includes the duration for the execution which is close to 7.1 seconds and the out_* file includes the max error which should be 0.
 
 #### Hipify
+
+```bash 
+cp Makefle saxpy.cu ../hip/
+cd ../hip
+```
+
 * Examine the hipify procedure
 
 ```bash= 
 module load hip/4.0.0
-hipexamine-perl.sh saxpy.cu 
+hipexamine-perl.sh saxpy.cu
+
   info: converted 14 CUDA->HIP refs ( error:0 init:0 version:0 device:0 context:0 module:0 memory:7 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:3 include:0 include_cuda_main_header:0 type:0 literal:0 numeric_literal:3 define:0 extern_shared:0 kernel_launch:1 )
   warn:0 LOC:42 in 'saxpy.cu'
   hipMemcpy 3
@@ -234,16 +242,18 @@ Check the files out_* and error_*
 
 The error output includes the duration for the execution which is close to 7.32 seconds and the out_* file includes the max error which should be 0. The overhead seems to be close to 3%.
 
+The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/saxpy/hip_solution
+
 ### Exercise: SAXPY CUBLAS
 #### Steps
 
 
 ```bash 
-cd porting/codes/saxpy/cublas
+cd ${rootdir}/porting/codes/saxpy/cublas
 ```
 ##### Check the file with an editor
 
-```bash=
+```cpp=
 #include <iostream>
 #include "cublas_v2.h"
 using namespace std;
@@ -323,7 +333,7 @@ hipify-perl --inplace saxpy_cublas.cu
 
 Now the code is:
 
-```c=
+```cpp=
 #include <iostream>
 #include "hipblas.h"
 using namespace std;
@@ -372,29 +382,79 @@ int main(){
 ...
 CC        = hipcc
 ...
-LDFLAGS = -lhipblas
+CFLAGS := -Xcompiler -Wall -I/appl/opt/rocm/rocm-4.0.0c/hipblas/hipblas/include
+...
+LDFLAGS = -L/appl/opt/rocm/rocm-4.0.0c/hipblas/hipblas/lib/ -lhipblas
 ...
 ```
 
-* Define variables to find the hipBLAS header and library
+* Define variables to find the hipBLAS header and library and compile
 
 ```bash=
-export CPATH=/appl/opt/rocm/rocm-4.0.0/hipblas/include/:$CPATH
-export LIBRARY_PATH=/appl/opt/rocm/rocm-4.0.0/hipblas/lib/:$LIBRARY_PATH
+export LD_LIBRARY_PATH=/appl/opt/rocm/rocm-4.0.0c/hipblas/hipblas/lib/:$LD_LIBRARY_PATH
+```
+Load the custom installation of ROCm
+```bash=
+module load hip/4.0.0c
+make clean
+make
 ```
 
+* Submit your job script
+
+```bash=
+sbatch sub.sh
+```
+
+The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/saxpy/hipblas_solution
 
 ### Exercise: Discrete_Hankel_Transform
 #### Steps
 ```bash 
-cd porting/codes/Discrete_Hankel_Transform
+cd ${rootdir}porting/codes/Discrete_Hankel_Transform/cuda
 ```
+
+##### Compile and Execute
+```bash
+nvcc -arch=sm_70  -o code Code.cu
+sbatch sub.sh
+```
+
+#### Hipify, Compile, and Execute
+```bash=
+cp * ../hip/
+cd ../hip/
+
+$ hipexamine-perl.sh Code.cu 
+  info: converted 46 CUDA->HIP refs ( error:0 init:0 version:0 device:0 context:0 module:0 memory:24 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:11 include:0 include_cuda_main_header:0 type:0 literal:0 numeric_literal:9 define:0 extern_shared:0 kernel_launch:2 )
+  warn:0 LOC:220 in 'Code.cu'
+  hipMalloc 9
+  hipMemcpy 9
+  hipMemcpyHostToDevice 7
+  hipFree 3
+  hipLaunchKernelGGL 2
+  hipMemGetInfo 2
+  hipMemcpyDeviceToHost 2
+  hipMemset 1
+
+$ hipify-perl -inplace Code.cu 
+
+$ ls
+bessel_zeros.in  Code.cu  Code.cu.prehip  README.md  sub.sh
+
+hipcc -arch=sm_70  -o code Code.cu
+sbatch sub.sh
+```
+
+The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/Discrete_Hankel_Transform/hip_solution
+
 
 ### Exercise: TwoD_dipolar_cut
 #### Steps
 ```bash 
 cd porting/codes/TwoD_dipolar_cut
 ```
+This code need `hiprand` library.
 
 ## Gromacs
 
@@ -573,29 +633,5 @@ Github issue: https://github.com/ROCm-Developer-Tools/HIP/issues/1491
 
 
 
-
-## Exercises
-
-In this point we assume that you have clone the github repository 
-
-Clone the Git repository of the training:
-
-```bash
-$ git clone https://github.com/csc-training/hip.git
-```
-
-
-### Exercise: Discrete_Hankel_Transform
-#### Steps
-```bash 
-cd porting/codes/Discrete_Hankel_Transform
-```
-
-### Exercise: TwoD_dipolar_cut
-#### Steps
-```bash 
-cd porting/codes/TwoD_dipolar_cut
-```
-This code need `hiprand` library.
 ### Feedback:
 
