@@ -42,7 +42,7 @@ Give your password and you should be located in the directory:
 ### Load the appropriate modules
 
 ```bash
-module load hip/4.0.0
+module load hip/4.0.0c
 ```
 
 ### Explore the environment
@@ -51,9 +51,18 @@ module load hip/4.0.0
 module list
 
 Currently Loaded Modules:
-  1) StdEnv   2) gcc/9.1.0   3) cuda/11.1.0   4) hip/4.0.0   5) intel-mkl/2019.0.4   6) hpcx-mpi/2.4.0
+  1) StdEnv   2) gcc/9.1.0   3) cuda/11.1.0   4) hip/4.0.0c   5) intel-mkl/2019.0.4   6) hpcx-mpi/2.4.0
 ```
-## Exercises
+## Porting CUDA codes to HIP
+
+### General Guidelines 
+
+* Start porting the CUDA codes on an NVIDIA system
+* When it is finished, compile the code with HIP on an AMD system (no access to AMD hardware yet)
+* HIP can be used on both AMD and NVIDIA GPUs
+* The script __hipconvertinplace-perl.sh__ can hipify all the files in a directory
+
+## Exercises - Demonstration
 
 In this point we assume that you have clone the github repository 
 
@@ -61,8 +70,8 @@ Clone the Git repository of the training:
 
 ```bash
 $ git clone https://github.com/csc-training/hip.git
-cd hip
-export rootdir=$PWD
+$ cd hip
+$ export rootdir=$PWD
 ```
 
 ### Exercise: SAXPY CUDA
@@ -70,7 +79,7 @@ export rootdir=$PWD
 
 
 ```bash 
-cd porting/codes/saxpy/cuda
+cd ${rootdir}/porting/codes/saxpy/cuda
 ```
 ##### Check the file with an editor 
 
@@ -244,6 +253,12 @@ The error output includes the duration for the execution which is close to 7.32 
 
 The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/saxpy/hip_solution
 
+### Lessons learned:
+
+* Replace __nvcc__ with __hipcc__ in the Makefile
+* Hipify in-place with `hipify-perl --inplace filename`
+* For NVIDIA system, if the HIP code is in a file with extension __.cpp__ use __hipcc --x cu__ instead of __hipcc__
+
 ### Exercise: SAXPY CUBLAS
 #### Steps
 
@@ -402,11 +417,19 @@ make
 
 * Submit your job script
 
-```bash=
+```bash
 sbatch sub.sh
 ```
-
+* Check the out* and error* files.
+*  
 The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/saxpy/hipblas_solution
+
+### Lessons learned:
+
+* Always link with the appropriate library when it is available
+* Do not forget to declare the _LD_LIBRARY_PATH_ environment variable
+* Adjust the Makefile
+
 
 ### Exercise: Discrete_Hankel_Transform
 #### Steps
@@ -448,13 +471,170 @@ sbatch sub.sh
 
 The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/Discrete_Hankel_Transform/hip_solution
 
+### Exercise: Heat Equation
 
-### Exercise: TwoD_dipolar_cut
-#### Steps
-```bash 
-cd porting/codes/TwoD_dipolar_cut
+#### CUDA
+
+```bash
+cd ${rootdir}/porting/codes/heat-equation/cuda
 ```
-This code need `hiprand` library.
+
+* Load CUDA aware MPI
+
+```bash
+module load openmpi
+```
+
+* Compile and execute
+
+```bash=
+make
+sbatch sub.sh
+```
+
+* Check the out* file, for example:
+
+```bash=
+cat out_5003895
+Average temperature at start: 59.763305
+Iteration took 0.179 seconds.
+Average temperature: 59.281239
+Reference value with default arguments: 59.281239
+
+```
+
+#### HIP
+
+##### Hipify
+```bash=
+make clean
+mkdir ../hip
+cp * ../hip/
+cd ../hip
+
+hipexamine-perl.sh 
+  info: converted 13 CUDA->HIP refs ( error:0 init:0 version:0 device:1 context:0 module:0 memory:6 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:0 include:1 include_cuda_main_header:0 type:0 literal:0 numeric_literal:4 define:0 extern_shared:0 kernel_launch:1 )
+  warn:0 LOC:90 in './core_cuda.cu'
+  info: converted 3 CUDA->HIP refs ( error:0 init:0 version:0 device:2 context:0 module:0 memory:0 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:0 include:1 include_cuda_main_header:0 type:0 literal:0 numeric_literal:0 define:0 extern_shared:0 kernel_launch:0 )
+  warn:0 LOC:200 in './setup.cpp'
+
+  info: TOTAL-converted 16 CUDA->HIP refs ( error:0 init:0 version:0 device:3 context:0 module:0 memory:6 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:0 include:2 include_cuda_main_header:0 type:0 literal:0 numeric_literal:4 define:0 extern_shared:0 kernel_launch:1 )
+  warn:0 LOC:702
+  kernels (1 total) :   evolve_kernel(1)
+
+  hipMemcpy 4
+  hipMemcpyHostToDevice 3
+  hipMalloc 2
+  hip_runtime_api 2
+  hipGetDeviceCount 1
+  hipDeviceSynchronize 1
+  hipLaunchKernelGGL 1
+  hipSetDevice 1
+  hipMemcpyDeviceToHost 1
+
+hipconvertinplace-perl.sh .
+  info: converted 13 CUDA->HIP refs ( error:0 init:0 version:0 device:1 context:0 module:0 memory:6 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:0 include:1 include_cuda_main_header:0 type:0 literal:0 numeric_literal:4 define:0 extern_shared:0 kernel_launch:1 )
+  warn:0 LOC:90 in './core_cuda.cu'
+  info: converted 3 CUDA->HIP refs ( error:0 init:0 version:0 device:2 context:0 module:0 memory:0 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:0 include:1 include_cuda_main_header:0 type:0 literal:0 numeric_literal:0 define:0 extern_shared:0 kernel_launch:0 )
+  warn:0 LOC:200 in './setup.cpp'
+
+  info: TOTAL-converted 16 CUDA->HIP refs ( error:0 init:0 version:0 device:3 context:0 module:0 memory:6 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:0 include:2 include_cuda_main_header:0 type:0 literal:0 numeric_literal:4 define:0 extern_shared:0 kernel_launch:1 )
+  warn:0 LOC:702
+  kernels (1 total) :   evolve_kernel(1)
+
+  hipMemcpy 4
+  hipMemcpyHostToDevice 3
+  hipMalloc 2
+  hip_runtime_api 2
+  hipGetDeviceCount 1
+  hipDeviceSynchronize 1
+  hipLaunchKernelGGL 1
+  hipSetDevice 1
+  hipMemcpyDeviceToHost 1
+
+ls
+core.cpp	 core_cuda.cu	      heat.h	     io.cpp	    main.cpp	     Makefile	    setup.cpp	      sub2.sh  utilities.cpp
+core.cpp.prehip  core_cuda.cu.prehip  heat.h.prehip  io.cpp.prehip  main.cpp.prehip  Makefile_orig  setup.cpp.prehip  sub.sh   utilities.cpp.prehip
+```
+##### Update the Makefile
+
+* Original Makefile
+```cmake=
+ifeq ($(COMP),)
+COMP=gnu
+endif
+...
+
+ifeq ($(COMP),gnu)
+CXX=mpicxx
+CC=gcc
+NVCC=nvcc
+NVCCFLAGS=-g -O3 -I$(COMMONDIR)
+CCFLAGS=-g -O3 -Wall -I$(COMMONDIR)
+LDFLAGS=
+LIBS=-lpng -lcudart
+endif
+
+EXE=heat_cuda
+OBJS=main.o core.o core_cuda.o setup.o utilities.o io.o
+OBJS_PNG=$(COMMONDIR)/pngwriter.o
+
+...
+$(EXE): $(OBJS) $(OBJS_PNG)
+        $(CXX) $(CCFLAGS) $(OBJS) $(OBJS_PNG) -o $@ $(LDFLAGS) $(LIBS)
+
+%.o: %.cpp
+        $(CXX) $(CCFLAGS) -c $< -o $@
+
+%.o: %.c
+        $(CC) $(CCFLAGS) -c $< -o $@
+
+%.o: %.cu
+        $(NVCC) $(NVCCFLAGS) -c $< -o $@
+```
+
+* Tips
+    * Use __hipcc__ to compile the code with HIP calls 
+    * __hipcc__ can add the necessary options to link with the default libraries that are required (not the MPI etc.)
+
+* New Makefile with regards that we use __nvcc__ under the __hipcc__
+
+```cmake=
+ifeq ($(COMP),)
+COMP=hipcc
+endif
+...
+ifeq ($(COMP),hipcc)
+CXX=hipcc
+CC=gcc
+NVCC=hipcc --x cu
+NVCCFLAGS=-g -O3 -I$(COMMONDIR)
+CXXFLAGS=-g -O3 -Xcompiler -Wall -I$(COMMONDIR)
+CCFLAGS=-g -O3 -Wall -I$(COMMONDIR)
+LDFLAGS=
+LIBS=-lpng -lmpi
+endif
+...
+$(EXE): $(OBJS) $(OBJS_PNG)
+        $(CXX) $(CXXFLAGS) $(OBJS) $(OBJS_PNG) -o $@ $(LDFLAGS) $(LIBS)
+
+%.o: %.cpp
+        $(CXX) $(CXXFLAGS) -c $< -o $@
+
+%.o: %.c
+        $(CC) $(CCFLAGS) -c $< -o $@
+
+%.o: %.cu
+        $(NVCC) $(NVCCFLAGS) -c $< -o $@
+```
+
+* Compile and Execute
+```bash=
+make
+sbatch sub.sh
+```
+
+### Exercise: SAXPY CUDA Fortran
 
 ## Gromacs
 
@@ -631,6 +811,17 @@ warning: ./gromacs/ewald/pme_solve.cu:260: unsupported device function "__shfl_d
 ```
 Github issue: https://github.com/ROCm-Developer-Tools/HIP/issues/1491
 
+
+
+## Exercises
+
+### Vector Addition
+
+* Hipify the code in the repository: https://github.com/csc-training/hip/tree/main/porting/codes/Vector_Addition
+
+### Heat Equation
+
+* Hipify the code in the repository: https://github.com/csc-training/hip/tree/main/porting/codes/heat-equation
 
 
 ### Feedback:
