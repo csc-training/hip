@@ -634,7 +634,216 @@ make
 sbatch sub.sh
 ```
 
+### CUDA Fortran
+
+* As we discussed already, there is no straight forward approach with CUDA Fortran.
+* The HIP functions are callable from C and with `extern C` are callable from Fortran
+* Procedure:
+    * Port CUDA Fortran code to HIP kernels in C++. The hipfort helps to call some HIP calls from Fortran.
+    * Wrap the kernel launch in C function
+    * Call the C function from Fortran through Fortran 2003 C binding, using pointers etc.
+    
 ### Exercise: SAXPY CUDA Fortran
+
+We have the following example. SAXPY code in CUDA Fortran. In this case to hipify the code, we follow this procedure.
+
+```bash=
+$ cd ${rootdir}/porting/codes/cuda_fortran_saxpy/cuda
+$ ls
+main.cuf
+cat main.cuf
+```
+```fortran=
+module mathOps
+contains
+  attributes(global) subroutine saxpy(x, y, a)
+    implicit none
+    real :: x(:), y(:)
+    real, value :: a
+    integer :: i, n
+    n = size(x)
+    i = blockDim%x * (blockIdx%x - 1) + threadIdx%x
+    if (i <= n) y(i) = y(i) + a*x(i)
+  end subroutine saxpy 
+end module mathOps
+
+program testSaxpy
+  use mathOps
+  use cudafor
+  implicit none
+  integer, parameter :: N = 40000
+  real :: x(N), y(N), a
+  real, device :: x_d(N), y_d(N)
+  type(dim3) :: grid, tBlock
+
+  tBlock = dim3(256,1,1)
+  grid = dim3(ceiling(real(N)/tBlock%x),1,1)
+
+  x = 1.0; y = 2.0; a = 2.0
+  x_d = x
+  y_d = y
+  call saxpy<<<grid, tBlock>>>(x_d, y_d, a)
+  y = y_d
+  write(*,*) 'Max error: ', maxval(abs(y-4.0))
+end program testSaxpy
+```
+
+* Compile the code and submit
+
+```bash=
+./compile.sh
+sbatch sub.sh
+```
+
+* Check the out* and error* files
+
+```bash=
+ cat out_*
+ Max error:     0.000000
+ 
+ cat error*
+ real	0m0.404s
+ ...
+```
+
+#### Create the HIP kernel
+
+* Original kernel
+
+```fortran=
+    i = blockDim%x * (blockIdx%x - 1) + threadIdx%x
+    if (i <= n) y(i) = y(i) + a*x(i)
+```
+
+* HIP kernel
+
+```cpp=
+__global__ void saxpy(float *y, float *x, float a, int n)
+{
+    size_t i = blockDim.x * blockIdx.x  + threadIdx.x;
+    if (i < n) y[i] = y[i] + a*x[i];
+}
+```
+
+##### Observations
+
+* \__global__ means that the fucntion will be executed on the GPU and it will be called from the host
+* In Fortran the variables such as  *blockDim%x* are used in C/C++ as *blockDim.x*. This means that you have to change all these variables but a find and replace through __sed__ could be easy
+* Using arrays also is different for example `y(i)` becomes `y[i]` which again __sed__ could help
+* Overall we need to be careful that we do not do any mistake, always check the results
+
+#### Wrap the kernel launch in C function
+
+```c=
+extern "C"
+{
+  void launch(float **dout, float **da, float db, int N)
+  {
+
+     dim3 tBlock(256,1,1);
+     dim3 grid(ceil((float)N/tBlock.x),1,1);
+    
+    hipLaunchKernelGGL((saxpy), grid, tBlock, 0, 0, *dout, *da, db, N);
+  }
+}
+```
+#### The new Fortran 2003 code
+
+```fortran=
+program testSaxpy
+  use iso_c_binding
+  use hipfort
+  use hipfort_check
+
+  implicit none
+  interface
+     subroutine launch(y,x,b,N) bind(c)
+       use iso_c_binding
+       implicit none
+       type(c_ptr) :: y,x
+       integer, value :: N
+       real, value :: b
+     end subroutine
+  end interface
+
+  type(c_ptr) :: dx = c_null_ptr
+  type(c_ptr) :: dy = c_null_ptr
+  integer, parameter :: N = 40000
+  integer, parameter :: bytes_per_element = 4
+  integer(c_size_t), parameter :: Nbytes = N*bytes_per_element
+  real, allocatable,target,dimension(:) :: x, y
+
+
+  real, parameter ::  a=2.0
+  real :: x_d(N), y_d(N)
+
+  call hipCheck(hipMalloc(dx,Nbytes))
+  call hipCheck(hipMalloc(dy,Nbytes))
+
+  allocate(x(N))
+  allocate(y(N))
+
+  x = 1.0;y = 2.0
+
+  call hipCheck(hipMemcpy(dx, c_loc(x), Nbytes, hipMemcpyHostToDevice))
+  call hipCheck(hipMemcpy(dy, c_loc(y), Nbytes, hipMemcpyHostToDevice))
+
+  call launch(dy, dx, a, N)
+
+  call hipCheck(hipDeviceSynchronize())
+
+  call hipCheck(hipMemcpy(c_loc(y), dy, Nbytes, hipMemcpyDeviceToHost))
+
+  write(*,*) 'Max error: ', maxval(abs(y-4.0))
+
+  call hipCheck(hipFree(dx))
+  call hipCheck(hipFree(dy))
+
+  deallocate(x)
+  deallocate(y)
+
+end program testSaxpy
+```
+
+#### Makefile 
+
+* hipfort provides a Makefile tht can help _Makefile.hipfort_
+
+```cmake=
+export HIPFORT_HOME=${ROCM_PATH}/hipfort/
+include ${HIPFORT_HOME}/bin/Makefile.hipfort
+
+OUTPUT_DIR ?= $(PWD)
+APP         = $(OUTPUT_DIR)/saxpy
+
+.DEFAULT_GOAL := all
+
+all: $(APP)
+
+$(APP): $(OUTPUT_DIR)/main.o $(OUTPUT_DIR)/hipsaxpy.o
+	$(FC) $^ $(LINKOPTS) -o $(APP)
+
+$(OUTPUT_DIR)/main.o: main.f03
+	$(FC)  -c $^ -o $(OUTPUT_DIR)/main.o
+
+$(OUTPUT_DIR)/hipsaxpy.o: hipsaxpy.cpp
+	$(CXX) --x cu -c $^ -o $(OUTPUT_DIR)/hipsaxpy.o
+
+clean:
+	rm -f $(APP) *.o *.mod *~
+```
+
+__Tip:__ Not sure how safe it is but if all your cpp files had HIP calls under NVIDIA system, you could define `export HIPCC_COMPILE_FLAGS_APPEND="--x cu"` and not to modify the Makefile. Be careful as this can break something else.
+
+* Compile and submit
+
+```bash=
+module load hip/4.0.0c
+make
+submit sub.sh
+```
+
+### CMAKE
 
 ## Gromacs
 
