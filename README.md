@@ -26,8 +26,8 @@ porting
     ├── saxpy/cuda 
     ├── saxpy/cublas     
     ├── Discrete_Hankel_Transform
-    ├── TwoD_dipolar_cut
-    └── 
+    ├── Heat-Equation
+    └── Early demonstration of Gromacs hipifying procedure
 ```
 
 ## Puhti
@@ -53,6 +53,89 @@ module list
 Currently Loaded Modules:
   1) StdEnv   2) gcc/9.1.0   3) cuda/11.1.0   4) hip/4.0.0c   5) intel-mkl/2019.0.4   6) hpcx-mpi/2.4.0
 ```
+
+### HIP
+
+* Load HIP module
+```bash
+module load hip/4.0.0c
+```
+
+There is module also _hip/4.0.0_ but we call it _hip/4.0.0c_ a it is custom installation. It will change name in the future, including the version.
+* hipconfig
+ 
+```bash=
+hipconfig
+
+HIP version  : 4.0.20496-4f163c6
+
+== hipconfig
+HIP_PATH     : /appl/opt/rocm/rocm-4.0.0c/hip
+ROCM_PATH    : /appl/opt/rocm/rocm-4.0.0c/
+HIP_COMPILER : clang
+HIP_PLATFORM : nvcc
+HIP_RUNTIME  : ROCclr
+CPP_CONFIG   :  -D__HIP_PLATFORM_NVCC__=  -I/appl/opt/rocm/rocm-4.0.0c/hip/include -I/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2//include
+
+== nvcc
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2020 NVIDIA Corporation
+Built on Tue_Sep_15_19:10:02_PDT_2020
+Cuda compilation tools, release 11.1, V11.1.74
+Build cuda_11.1.TC455_06.29069683_0
+
+=== Environment Variables
+PATH=/appl/opt/rocm/rocm-4.0.0c/hip/bin:/appl/spack/install-tree/gcc-9.1.0/hwloc-2.0.2-wqrgpf/bin:/appl/opt/ucx/1.9.0-cuda/bin:/appl/spack/install-tree/gcc-9.1.0/openmpi-4.0.5-ym53tz/bin:/appl/spack/install-tree/gcc-9.1.0/hdf5-1.12.0-wtlera/bin:/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2/bin:/appl/spack/install-tree/gcc-4.8.5/gcc-9.1.0-vpjht2/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/appl/bin:/users/markoman/.local/bin:/users/markoman/bin
+CUDA_PATH=/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2/
+HIPFORT_ARCH=nvptx
+HIP_PLATFORM=nvcc
+LD_LIBRARY_PATH=/appl/opt/rocm/rocm-4.0.0c/hip/lib:/appl/spack/install-tree/gcc-9.1.0/hwloc-2.0.2-wqrgpf/lib:/appl/opt/ucx/1.9.0-cuda/lib:/appl/spack/install-tree/gcc-9.1.0/openmpi-4.0.5-ym53tz/lib:/appl/spack/install-tree/gcc-9.1.0/hdf5-1.12.0-wtlera/lib:/appl/opt/cluster_studio_xe2019/compilers_and_libraries_2019.4.243/linux/tbb/lib/intel64_lin/gcc4.7:/appl/opt/cluster_studio_xe2019/compilers_and_libraries_2019.4.243/linux/compiler/lib/intel64_lin:/appl/opt/cluster_studio_xe2019/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64_lin:/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2/lib64:/appl/spack/install-tree/gcc-4.8.5/gcc-9.1.0-vpjht2/lib64:/appl/spack/install-tree/gcc-4.8.5/gcc-9.1.0-vpjht2/lib:/appl/opt/rocm/rocm-4.0.0/hiprand/lib:/appl/opt/rocm/rocm-4.0.0c/hipblas/hipblas/lib
+HIP_RUNTIME=ROCclr
+HIPFORT_GPU=sm_70
+CUDA_INSTALL_ROOT=/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2
+HIPFORT_HOME=/appl/opt/rocm/rocm-4.0.0c//hipfort/
+HIPFORT_ARCHGPU=nvptx-sm_70
+HIPCC_OPTS=--x cu
+HIP_COMPILER=clang
+HIP_PATH=/appl/opt/rocm/rocm-4.0.0c/hip
+
+== Linux Kernel
+Hostname     : puhti-login1.bullx
+Linux puhti-login1.bullx 3.10.0-1062.33.1.el7.x86_64 #1 SMP Thu Aug 13 10:55:03 EDT 2020 x86_64 x86_64 x86_64 GNU/Linux
+LSB Version:	:core-4.1-amd64:core-4.1-noarch
+Distributor ID:	RedHatEnterpriseServer
+Description:	Red Hat Enterprise Linux Server release 7.7 (Maipo)
+Release:	7.7
+Codename:	Maipo
+```
+
+* The wrapper to compile on NVIDIA system is called _hipcc_
+
+```bash=
+ which hipcc
+/appl/opt/rocm/rocm-4.0.0c/hip/bin/hipcc
+```
+* You can read the file _/appl/opt/rocm/rocm-4.0.0c/hip/bin/hipcc_ for more information
+
+```bash=
+hipcc -h
+
+Usage  : nvcc [options] <inputfile>
+
+Options for specifying the compilation phase
+============================================
+More exactly, this option specifies up to which stage the input files must be compiled,
+according to the following compilation trajectories for different input file types:
+        .c/.cc/.cpp/.cxx : preprocess, compile, link
+        .o               : link
+        .i/.ii           : compile, link
+        .cu              : preprocess, cuda frontend, PTX assemble,
+                           merge with host C code, compile, link
+        .gpu             : cicc compile into cubin
+        .ptx             : PTX assemble into cubin.
+
+```
+
 ## Porting CUDA codes to HIP
 
 ### General Guidelines 
@@ -73,6 +156,8 @@ $ git clone https://github.com/csc-training/hip.git
 $ cd hip
 $ export rootdir=$PWD
 ```
+
+Acknowledgement: Some exercises were provided by Cristian-Valise Achim, Jussi Enkovaara, AMD, and internet.
 
 ### Exercise: SAXPY CUDA
 #### Steps
@@ -146,7 +231,7 @@ The error output includes the duration for the execution which is close to 7.1 s
 #### Hipify
 
 ```bash 
-cp Makefle saxpy.cu ../hip/
+cp Makefile saxpy.cu ../hip/
 cd ../hip
 ```
 
@@ -509,7 +594,7 @@ Reference value with default arguments: 59.281239
 ```bash=
 make clean
 mkdir ../hip
-cp * ../hip/
+cp *.cpp *.h *.cu ../hip/
 cd ../hip
 
 hipexamine-perl.sh 
@@ -632,6 +717,207 @@ $(EXE): $(OBJS) $(OBJS_PNG)
 ```bash=
 make
 sbatch sub.sh
+```
+**Following the instructions I managed to hipify the code, but the Makefile from the solution folder fails.**
+```
+$ make
+mpicxx -g -O3 -Wall -I../common -c main.cpp -o main.o
+mpicxx -g -O3 -Wall -I../common -c core.cpp -o core.o
+mpicxx -g -O3 -Wall -I../common -c setup.cpp -o setup.o
+setup.cpp: In function 'void initialize(int, char**, field*, field*, int*, parallel_data*)':
+setup.cpp:48:16: warning: 'char* strncpy(char*, const char*, size_t)' specified bound 64 equals destination size [-Wstringop-truncation]
+   48 |         strncpy(input_file, argv[1], 64);
+      |         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+setup.cpp:43:16: warning: 'char* strncpy(char*, const char*, size_t)' specified bound 64 equals destination size [-Wstringop-truncation]
+   43 |         strncpy(input_file, argv[1], 64);
+      |         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
+mpicxx -g -O3 -Wall -I../common -c utilities.cpp -o utilities.o
+mpicxx -g -O3 -Wall -I../common -c io.cpp -o io.o
+make: *** No rule to make target `core_hip.cpp', needed by `core_hip.o'.  Stop.
+
+
+```
+
+### Exercise: 2D WAVE Propagation
+#### CUDA and CPU
+The 2D Wave Propagation case was provided by Ludovic Rass
+
+```bash=
+cd ${rootdir}/porting/codes/wave_2d/cuda_cpu
+ls 
+compile.sh  sub.sh  vizme2D.m  Wave_2D.c  Wave_2D.cu
+```
+
+The file _Wave_2D.c_ is for CPU and the _Wave_2D.cu_ is for GPU.
+
+* Compile and Submit
+```bash=
+cat compile.sh
+#!/bin/bash
+g++ -O3 Wave_2D.c -o wcpu
+
+nvcc -arch=sm_70 -O3 Wave_2D.cu -o wgpu
+
+./compile.sh
+
+sbatch sub.sh
+```
+* Check the out* file
+
+```bash=
+cat out_5015029 
+Perf: 220 iterations took 7.392e-03 seconds @ 32.9915 GB/s.
+Process uses GPU with id 0 .
+Perf: 220 iterations took 3.312e-03 seconds @ 73.6352 GB/s.
+```
+
+The CUDA code has 2.28 times better bandwidth. Of course it depends on the problem size which in this case seems small.
+
+##### HIP
+
+There is a script to compile the code in the _hip_ folder already. Copy the CUDA file to the _../hip_ directory
+
+```bash
+cp *.cu sub.sh ../hip
+cd ../hip
+```
+
+##### Hipify
+
+```bash=
+hipify-perl --print-stats --inplace Wave_2D.cu 
+  info: converted 28 CUDA->HIP refs ( error:2 init:0 version:0 device:9 context:0 module:0 memory:4 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:4 include:0 include_cuda_main_header:1 type:1 literal:0 numeric_literal:4 define:0 extern_shared:0 kernel_launch:3 )
+  warn:0 LOC:126 in 'Wave_2D.cu'
+  hipDeviceReset 3
+  hipDeviceSynchronize 3
+  hipLaunchKernelGGL 3
+  hipMemcpy 2
+  hipGetDevice 1
+  hipError_t 1
+  hipFree 1
+  hipDeviceSetCacheConfig 1
+  hipMalloc 1
+  hip_runtime 1
+  hipSetDevice 1
+  hipMemcpyDeviceToHost 1
+  hipMemcpyHostToDevice 1
+  hipSuccess 1
+  hipGetErrorString 1
+  hipGetLastError 1
+  hipFuncCachePreferL1 1
+```
+
+* Compile and submit
+
+Before you proceed edit the `sub.sh` and comment the srun command to execute the CPU executable
+
+```bash=
+./compile.sh
+sbatch sub.sh
+```
+
+* From the output file
+
+```bash=
+cat out_*
+Process uses GPU with id 0 .
+Perf: 220 iterations took 3.385e-03 seconds @ 72.0481 GB/s.
+```
+
+The HIP version provides similar result with the CUDA version with small overhead.
+
+### Exercise: KMeans
+
+#### CUDA
+
+```bash=
+cd ${rootdir}porting/codes/kmeans/cuda
+ls
+cuda_io.cu  cuda_kmeans.cu  cuda_main.cu  cuda_wtime.cu  Image_data  kmeans.h  LICENSE  Makefile  README  sample.output  sub.sh
+```
+
+* Compile and Execute
+
+```bash=
+make cuda
+sbatch sub.sh
+```
+
+* We can check the out* and error* files
+
+```bash=
+Writing coordinates of K=128 cluster centers to file "Image_data/color17695.bin.cluster_centres"
+Writing membership of N=17695 data objects to file "Image_data/color17695.bin.membership"
+
+Performing **** Regular Kmeans (CUDA version) ****
+Input file:     Image_data/color17695.bin
+numObjs       = 17695
+numCoords     = 9
+numClusters   = 128
+threshold     = 0.0010
+Loop iterations    = 131
+I/O time           =     0.0529 sec
+Computation timing =     0.2059 sec
+
+```
+
+#### HIP
+
+* Copy the data to the _../hip_ directory
+
+```bash=
+cp -r *.cu *.h Image_data ../hip 
+cd ../hip
+```
+
+* Hipify
+
+```bash=
+hipconvertinplace-perl.sh .
+  info: converted 28 CUDA->HIP refs ( error:0 init:0 version:0 device:4 context:0 module:0 memory:13 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:1 include:0 include_cuda_main_header:0 type:1 literal:0 numeric_literal:5 define:0 extern_shared:2 kernel_launch:2 )
+  warn:0 LOC:372 in './cuda_kmeans.cu'
+  info: converted 8 CUDA->HIP refs ( error:3 init:0 version:0 device:0 context:0 module:0 memory:0 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:0 include:1 include_cuda_main_header:0 type:2 literal:0 numeric_literal:1 define:1 extern_shared:0 kernel_launch:0 )
+  warn:0 LOC:79 in './kmeans.h'
+
+  info: TOTAL-converted 36 CUDA->HIP refs ( error:3 init:0 version:0 device:4 context:0 module:0 memory:13 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:1 include:1 include_cuda_main_header:0 type:3 literal:0 numeric_literal:6 define:1 extern_shared:2 kernel_launch:2 )
+  warn:0 LOC:843
+  kernels (1 total) :   compute_delta(1)
+
+  hipMemcpy 5
+  hipFree 4
+  hipMalloc 4
+  hipMemcpyHostToDevice 3
+  hipError_t 2
+  hipDeviceSynchronize 2
+  hipLaunchKernelGGL 2
+  hipGetErrorString 2
+  HIP_DYNAMIC_SHARED 2
+  hipMemcpyDeviceToHost 2
+  hipGetDevice 1
+  hipDeviceProp_t 1
+  hipGetDeviceProperties 1
+  hipSuccess 1
+  hipGetLastError 1
+```
+
+* Compile and execute
+
+```bash=
+make -f Makefile.hip 
+sbatch sub.sh
+```
+* The output file
+
+```bash=
+Performing **** Regular Kmeans (CUDA version) ****
+Input file:     Image_data/color17695.bin
+numObjs       = 17695
+numCoords     = 9
+numClusters   = 128
+threshold     = 0.0010
+Loop iterations    = 131
+I/O time           =     0.0081 sec
+Computation timing =     0.2000 sec
 ```
 
 ### CUDA Fortran
@@ -807,7 +1093,7 @@ end program testSaxpy
 
 #### Makefile 
 
-* hipfort provides a Makefile tht can help _Makefile.hipfort_
+* hipfort provides a Makefile called _Makefile.hipfort_
 
 ```cmake=
 export HIPFORT_HOME=${ROCM_PATH}/hipfort/
@@ -1020,17 +1306,69 @@ warning: ./gromacs/ewald/pme_solve.cu:260: unsupported device function "__shfl_d
 ```
 Github issue: https://github.com/ROCm-Developer-Tools/HIP/issues/1491
 
+__Solution:__
 
+Change the calls of __shfl\_*\_sync__ to __shfl\_*__ for example __shfl_down_sync to __shfl_down
+
+3. __Description:__ Gromacs uses FFT
+
+__Solution:__
+
+The hipFFT seems not to be able to compile on NVIDIA systems, it is possible with the hip/4.0.0 but the explanation is different.
+
+4. __Description:__
+
+Error: _src/gromacs/utility/cuda_version_information.cu(49): error: identifier "hipDriverGetVersion" is undefined_
+
+Code:
+```cpp=
+#include "gmxpre.h"
+#include "cuda_version_information.h"
+#include "gromacs/utility/stringutil.h"
+
+namespace gmx
+{
+
+std::string getCudaDriverVersionString()
+{
+    int cuda_driver = 0;
+    if (hipDriverGetVersion(&cuda_driver) != hipSuccess)
+    {
+        return "N/A";
+    }
+    return formatString("%d.%d", cuda_driver / 1000, cuda_driver % 100);
+}
+
+std::string getCudaRuntimeVersionString()
+{
+    int cuda_runtime = 0;
+    if (hipRuntimeGetVersion(&cuda_runtime) != hipSuccess)
+    {
+        return "N/A";
+    }
+    return formatString("%d.%d", cuda_runtime / 1000, cuda_runtime % 100);
+}
+
+} // namespace gmx
+
+```
+__Solution:__
+
+Add `#include "hip/hip_runtime.h"`
+
+##### Compilation
+
+This is an example it does not mean that this is the best way
+```bash=
+CXX=/appl/opt/rocm/rocm-4.0.0/hip/bin/hipcc cmake -DGMX_GPU=CUDA ..
+make
+```
 
 ## Exercises
 
 ### Vector Addition
 
 * Hipify the code in the repository: https://github.com/csc-training/hip/tree/main/porting/codes/Vector_Addition
-
-### Heat Equation
-
-* Hipify the code in the repository: https://github.com/csc-training/hip/tree/main/porting/codes/heat-equation
 
 
 ### Feedback:
