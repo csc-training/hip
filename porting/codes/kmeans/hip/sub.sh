@@ -11,4 +11,4 @@
 #SBATCH --gres=gpu:v100:1
 
 
-time srun ./hip_main -b -i Image_data/color17695.bin -n 128
+time srun ./hip_main -b -i Image_data/color17695.bin -n 128 -o
