@@ -16,7 +16,7 @@ $(OUTPUT_DIR)/main.o: main.f03
 	$(FC)  -c $^ -o $(OUTPUT_DIR)/main.o
 
 $(OUTPUT_DIR)/hipsaxpy.o: hipsaxpy.cpp
-	$(CXX) -c $^ -o $(OUTPUT_DIR)/hipsaxpy.o
+	$(CXX) --x cu -c $^ -o $(OUTPUT_DIR)/hipsaxpy.o
 
 run: $(APP)
 	HIP_TRACE_API=1 $(APP)
