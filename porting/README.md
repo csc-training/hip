@@ -274,3 +274,4 @@ The outcome is that the used library does require NVIDIA hardware and it crashes
 - If your CUDA kernel, includes the dim3() call, then hipify will convert wrongly. Bug: https://github.com/ROCm-Developer-Tools/HIPIFY/issues/246 (21/12/2020)
 
 - In CUDA, `__CUDACC__` is defined by `nvcc`, but the HIP equivalent `__HIPCC__` is defined in `hip_runtime.h`. Thus, if code uses `__CUDACC__` without `#include <cuda_runtime_api.h>`, one needs to add manually `#include <hip_runtime.h>` to have the automatically converted `__HIPCC__` to get defined. [Issue in Github](https://github.com/ROCm-Developer-Tools/HIP/issues/29)
+- `hiprand` library can not be compiled on Nvidia systems
