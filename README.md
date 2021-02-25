@@ -719,24 +719,6 @@ make
 sbatch sub.sh
 ```
 
-```
-$  make
-hipcc -g -O3 -Xcompiler -Wall -I../common -c main.cpp -o main.o
-hipcc -g -O3 -Xcompiler -Wall -I../common -c core.cpp -o core.o
-hipcc --x cu -g -O3 -I../common -c core_cuda.cu -o core_cuda.o
-hipcc -g -O3 -Xcompiler -Wall -I../common -c setup.cpp -o setup.o
-setup.cpp: In function ‘void initialize(int, char**, field*, field*, int*, parallel_data*)’:
-setup.cpp:48:16: warning: ‘char* strncpy(char*, const char*, size_t)’ specified bound 64 equals destination size [-Wstringop-truncation]
-   48 |         strncpy(input_file, argv[1], 64);
-      |         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-setup.cpp:43:16: warning: ‘char* strncpy(char*, const char*, size_t)’ specified bound 64 equals destination size [-Wstringop-truncation]
-   43 |         strncpy(input_file, argv[1], 64);
-      |         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-hipcc -g -O3 -Xcompiler -Wall -I../common -c utilities.cpp -o utilities.o
-hipcc -g -O3 -Xcompiler -Wall -I../common -c io.cpp -o io.o
-hipcc -g -O3 -Xcompiler -Wall -I../common main.o core.o core_cuda.o setup.o utilities.o io.o  ../common/pngwriter.o -o heat_cuda  -lpng -lmpi
-```
-
 ### Exercise: 2D WAVE Propagation
 #### CUDA and CPU
 The 2D Wave Propagation case was provided by Ludovic Rass
