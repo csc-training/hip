@@ -14,9 +14,10 @@
 | 11:30 - 16:00 | Hands-on sessions | 
 
 
-## Important links
+## Important Information
 Github repository: https://github.com/csc-training/hip
 Submitting jobs to Puhti: https://docs.csc.fi/computing/running/submitting-jobs/
+SLURM reservation for this training: _gpu_training_
 
 
 
@@ -1585,6 +1586,14 @@ endmacro()
 
 * Hipify the code in the repository: https://github.com/csc-training/hip/tree/main/porting/codes/Vector_Addition
 
+
+## Known issues
+
+- Some HIP libraries need dependencies not available on NVIDIA platform, need to investigate.
+
+- If your CUDA kernel, includes the dim3() call, then hipify will convert wrongly. [Issue in Github](https://github.com/ROCm-Developer-Tools/HIPIFY/issues/246) . It was fixed on February 24th, not yet installed on Puhti
+
+- In CUDA, `__CUDACC__` is defined by `nvcc`, but the HIP equivalent `__HIPCC__` is defined in `hip_runtime.h`. Thus, if code uses `__CUDACC__` without `#include <cuda_runtime_api.h>`, one needs to add manually `#include <hip_runtime.h>` to have the automatically converted `__HIPCC__` to get defined. [Issue in Github](https://github.com/ROCm-Developer-Tools/HIP/issues/29)
 
 ### Feedback:
 
