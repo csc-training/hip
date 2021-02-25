@@ -718,24 +718,23 @@ $(EXE): $(OBJS) $(OBJS_PNG)
 make
 sbatch sub.sh
 ```
-**Following the instructions I managed to hipify the code, but the Makefile from the solution folder fails.**
+
 ```
-$ make
-mpicxx -g -O3 -Wall -I../common -c main.cpp -o main.o
-mpicxx -g -O3 -Wall -I../common -c core.cpp -o core.o
-mpicxx -g -O3 -Wall -I../common -c setup.cpp -o setup.o
-setup.cpp: In function 'void initialize(int, char**, field*, field*, int*, parallel_data*)':
-setup.cpp:48:16: warning: 'char* strncpy(char*, const char*, size_t)' specified bound 64 equals destination size [-Wstringop-truncation]
+$  make
+hipcc -g -O3 -Xcompiler -Wall -I../common -c main.cpp -o main.o
+hipcc -g -O3 -Xcompiler -Wall -I../common -c core.cpp -o core.o
+hipcc --x cu -g -O3 -I../common -c core_cuda.cu -o core_cuda.o
+hipcc -g -O3 -Xcompiler -Wall -I../common -c setup.cpp -o setup.o
+setup.cpp: In function ‘void initialize(int, char**, field*, field*, int*, parallel_data*)’:
+setup.cpp:48:16: warning: ‘char* strncpy(char*, const char*, size_t)’ specified bound 64 equals destination size [-Wstringop-truncation]
    48 |         strncpy(input_file, argv[1], 64);
       |         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-setup.cpp:43:16: warning: 'char* strncpy(char*, const char*, size_t)' specified bound 64 equals destination size [-Wstringop-truncation]
+setup.cpp:43:16: warning: ‘char* strncpy(char*, const char*, size_t)’ specified bound 64 equals destination size [-Wstringop-truncation]
    43 |         strncpy(input_file, argv[1], 64);
       |         ~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~
-mpicxx -g -O3 -Wall -I../common -c utilities.cpp -o utilities.o
-mpicxx -g -O3 -Wall -I../common -c io.cpp -o io.o
-make: *** No rule to make target `core_hip.cpp', needed by `core_hip.o'.  Stop.
-
-
+hipcc -g -O3 -Xcompiler -Wall -I../common -c utilities.cpp -o utilities.o
+hipcc -g -O3 -Xcompiler -Wall -I../common -c io.cpp -o io.o
+hipcc -g -O3 -Xcompiler -Wall -I../common main.o core.o core_cuda.o setup.o utilities.o io.o  ../common/pngwriter.o -o heat_cuda  -lpng -lmpi
 ```
 
 ### Exercise: 2D WAVE Propagation
@@ -919,6 +918,77 @@ Loop iterations    = 131
 I/O time           =     0.0081 sec
 Computation timing =     0.2000 sec
 ```
+
+### Exercise: Madgraph 4 GPU
+
+```bash=
+cd ${rootdir}/porting/codes/
+mkdir madgraph4gpu
+cd madgraph4gpu
+wget https://github.com/madgraph5/madgraph4gpu/archive/master.zip
+unzip master.zip
+cd madgraph4gpu-master/
+ls
+epoch0	epoch1	epoch2	README.md  test  tools
+cd epoch1/
+cp -r cuda hip
+```
+
+#### Hipify
+
+```bash=
+hipconvertinplace-perl.sh hip/
+  info: converted 7 CUDA->HIP refs ( error:0 init:0 version:0 device:0 context:0 module:0 memory:3 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:4 include:0 include_cuda_main_header:0 type:0 literal:0 numeric_literal:0 define:0 extern_shared:0 kernel_launch:0 )
+  warn:0 LOC:841 in 'hip/gg_tt/SubProcesses/P1_Sigma_sm_gg_ttx/CPPProcess.cu'
+...
+ info: TOTAL-converted 294 CUDA->HIP refs ( error:11 init:0 version:0 device:3 context:0 module:0 memory:59 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:14 library:6 device_library:16 device_function:35 include:0 include_cuda_main_header:1 type:26 literal:0 numeric_literal:31 define:79 extern_shared:0 kernel_launch:13 )
+  warn:2 LOC:15920
+  warning: unconverted cudaTearDown : 2
+  kernels (2 total) :   sigmaKin(3)  gProc::sigmaKin(2)
+
+  hipMemcpy 23
+  hipMemcpyToSymbol 19
+  hipMemcpyDeviceToHost 18
+  hipLaunchKernelGGL 18
+  hipFree 14
+  hipMalloc 11
+  hipPeekAtLastError 9
+  hipMemcpyHostToDevice 6
+  hipDeviceReset 5
+  hipSuccess 5
+  HIP_SYMBOL 5
+  hipError_t 4
+  hipGetErrorString 4
+  hipDoubleComplex 3
+  hip_runtime 3
+  hipHostFree 3
+  hipHostMalloc 3
+  hipMemcpy3D 3
+  hipFloatComplex 3
+  hipMemcpy2D 3
+  HIPRAND_STATUS_SUCCESS 2
+  HIPRAND_RNG_PSEUDO_PHILOX4_32_10 2
+  HIPRAND_RNG_PSEUDO_MT19937 2
+  HIPRAND_RNG_PSEUDO_MTGP32 2
+  HIPRAND_RNG_PSEUDO_XORWOW 2
+  HIPRAND_RNG_PSEUDO_MRG32K3A 2
+  hipComplex 1
+  hip_complex 1
+  hipCsubf 1
+  hipCmulf 1
+  hipCaddf 1
+  hipCdiv 1
+  hipCrealf 1
+  hipCsub 1
+  hipCreal 1
+  hipCimag 1
+  hipCmul 1
+  hipCadd 1
+  hipCimagf 1
+  hipCdivf 1
+```
+
+* The warning is about a cuda variable deployed by the developers, so it is safe. The _hiprand_ is not working on our environment this moment, thus the utilization of this code requires the actual AMD hardware, however, it is ported. It requires tuning and checking.
 
 ### CUDA Fortran
 
