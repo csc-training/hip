@@ -18,6 +18,7 @@
 Github repository: https://github.com/csc-training/hip
 Submitting jobs to Puhti: https://docs.csc.fi/computing/running/submitting-jobs/
 SLURM reservation for this training: _gpu_training_
+AMD porting guide: https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-porting-guide.html
 
 
 
@@ -172,6 +173,54 @@ according to the following compilation trajectories for different input file typ
 * When it is finished, compile the code with HIP on an AMD system (no access to AMD hardware yet)
 * HIP can be used on both AMD and NVIDIA GPUs
 * The script __hipconvertinplace-perl.sh__ can hipify all the files in a directory
+* Some HIP libraries seem not to work on NVIDIA systems
+
+### VERBOSE Mode
+
+* If you want to see the command that is executed from hipcc, declare the following_
+
+```bash
+export HIPCC_VERBOSE=1
+```
+
+* For example, on Puhti, the command:
+```bash=
+hipcc "--gpu-architecture=sm_70" -g -O3 -I../common -c core_cuda.cu -o core_cuda.o
+```
+
+would also print the command that was actually executed:
+
+```bash=
+hipcc-cmd: /appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2//bin/nvcc -D__HIP_ROCclr__ -Wno-deprecated-gpu-targets  -isystem /appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2//include -isystem /appl/opt/rocm/rocm-4.0.0c/hip/include  --gpu-architecture=sm_70 -g -O3 -I../common -c core_cuda.cu -o core_cuda.o
+```
+
+### Debug hipcc
+
+Add in your submission script before srun:
+
+```
+export AMD_LOG_LEVEL=4
+```
+
+For example, with no debug mode:
+
+```
+srun: error: r01g01: task 0: Segmentation fault
+srun: Terminating job step 4339273.0
+```
+
+with debug mode:
+
+```
+:3:rocdevice.cpp            :458 : 2193024923864 us: Initializing HSA stack.
+:1:rocdevice.cpp            :466 : 2193024923948 us: hsa_init failed.
+:4:runtime.cpp              :82  : 2193024923950 us: init
+srun: error: r01g01: task 0: Segmentation fault
+srun: Terminating job step 4339273.0
+```
+
+The outcome is that the used library does require AMD hardware and it crashes immediately. In a real execution you will observe a lot of output data.
+
 
 ## Exercises - Demonstration
 
@@ -190,6 +239,7 @@ Acknowledgment: Some exercises were provided by Cristian-Valise Achim, Jussi Enk
 ### Exercise: SAXPY CUDA
 #### Steps
 
+SAXPY is used for Single-Precision A*X Plus Y. It combines a scalar multiplication and vector addition.
 
 ```bash 
 cd ${rootdir}/porting/codes/saxpy/cuda
@@ -375,6 +425,7 @@ The solution is here: https://github.com/csc-training/hip/tree/main/porting/code
 ### Exercise: SAXPY CUBLAS
 #### Steps
 
+SAXPY but using cuBLAS
 
 ```bash 
 cd ${rootdir}/porting/codes/saxpy/cublas
@@ -545,6 +596,9 @@ The solution is here: https://github.com/csc-training/hip/tree/main/porting/code
 
 
 ### Exercise: Discrete_Hankel_Transform
+
+Description: https://github.com/csc-training/hip/tree/main/porting/codes/Discrete_Hankel_Transform
+
 #### Steps
 ```bash 
 cd ${rootdir}porting/codes/Discrete_Hankel_Transform/cuda
@@ -586,6 +640,8 @@ The solution is here: https://github.com/csc-training/hip/tree/main/porting/code
 
 ### Exercise: Heat Equation
 
+Example implementations of two dimensional heat equation.
+
 #### CUDA
 
 ```bash
@@ -616,9 +672,7 @@ Reference value with default arguments: 59.281239
 
 ```
 
-#### HIP
-
-##### Hipify
+#### Hipify
 ```bash=
 make clean
 mkdir ../hip
@@ -669,7 +723,7 @@ ls
 core.cpp	 core_cuda.cu	      heat.h	     io.cpp	    main.cpp	     Makefile	    setup.cpp	      sub2.sh  utilities.cpp
 core.cpp.prehip  core_cuda.cu.prehip  heat.h.prehip  io.cpp.prehip  main.cpp.prehip  Makefile_orig  setup.cpp.prehip  sub.sh   utilities.cpp.prehip
 ```
-##### Update the Makefile
+#### Update the Makefile
 
 * Original Makefile
 ```cmake=
@@ -748,6 +802,9 @@ sbatch sub.sh
 ```
 
 ### Exercise: 2D WAVE Propagation
+
+2D Wave Propagation
+
 #### CUDA and CPU
 The 2D Wave Propagation case was provided by Ludovic Rass
 
@@ -836,6 +893,8 @@ Perf: 220 iterations took 3.385e-03 seconds @ 72.0481 GB/s.
 The HIP version provides similar results to the CUDA version with a small overhead.
 
 ### Exercise: KMeans
+
+Parallel k-means clustering code
 
 #### CUDA
 
@@ -929,6 +988,8 @@ Computation timing =     0.2000 sec
 ```
 
 ### Exercise: Madgraph 4 GPU
+
+This code developed in the context of porting the MadGraph5_aMC@NLO event generator software onto GPU hardware. MadGraph5_aMC@NLO is able to generate code for various physics processes in different programming languages (Fortran, C, C++). 
 
 ```bash=
 cd ${rootdir}/porting/codes/
@@ -1209,6 +1270,8 @@ submit sub.sh
 ```
 
 ## Gromacs
+
+GROMACS is a molecular dynamics package mainly designed for simulations of proteins, lipids, and nucleic acids.
 
 Do not follow these instructions as it could take a long time, they are documented to help you in your case
 
