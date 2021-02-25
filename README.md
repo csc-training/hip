@@ -87,7 +87,7 @@ Currently Loaded Modules:
   1) StdEnv   2) gcc/9.1.0   3) cuda/11.1.0   4) hip/4.0.0c   5) intel-mkl/2019.0.4   6) hpcx-mpi/2.4.0
 ```
 
-There is also a module _hip/4.0.0_ but we created also one _hip/4.0.0c_ a it is installation from the source code. The name will comply with the version in the future.
+There is also a module _hip/4.0.0_ but we created also one _hip/4.0.0c_ which is an installation from the source code. The name will comply with the version in the future.
 
 * hipconfig
  
@@ -174,7 +174,7 @@ according to the following compilation trajectories for different input file typ
 
 ## Exercises - Demonstration
 
-In this point we assume that you have clone the github repository 
+In this point, we assume that you have cloned the github repository 
 
 Clone the Git repository of the training:
 
@@ -184,7 +184,7 @@ $ cd hip
 $ export rootdir=$PWD
 ```
 
-Acknowledgement: Some exercises were provided by Cristian-Valise Achim, Jussi Enkovaara, AMD, and internet.
+Acknowledgment: Some exercises were provided by Cristian-Valise Achim, Jussi Enkovaara, AMD, and found online.
 
 ### Exercise: SAXPY CUDA
 #### Steps
@@ -779,7 +779,7 @@ Process uses GPU with id 0 .
 Perf: 220 iterations took 3.312e-03 seconds @ 73.6352 GB/s.
 ```
 
-The CUDA code has 2.28 times better bandwidth. Of course it depends on the problem size which in this case seems small.
+The CUDA code has 2.28 times better bandwidth. Of course, it depends on the problem size which in this case seems small.
 
 ##### HIP
 
@@ -817,7 +817,7 @@ hipify-perl --print-stats --inplace Wave_2D.cu
 
 * Compile and submit
 
-Before you proceed edit the `sub.sh` and comment the srun command to execute the CPU executable
+Before you proceed with the submission, edit the `sub.sh` and comment the srun command to execute the CPU executable
 
 ```bash=
 ./compile.sh
@@ -832,7 +832,7 @@ Process uses GPU with id 0 .
 Perf: 220 iterations took 3.385e-03 seconds @ 72.0481 GB/s.
 ```
 
-The HIP version provides similar result with the CUDA version with small overhead.
+The HIP version provides similar results to the CUDA version with a small overhead.
 
 ### Exercise: KMeans
 
@@ -866,7 +866,6 @@ threshold     = 0.0010
 Loop iterations    = 131
 I/O time           =     0.0529 sec
 Computation timing =     0.2059 sec
-
 ```
 
 #### HIP
@@ -1010,7 +1009,7 @@ hipconvertinplace-perl.sh hip/
     
 ### Exercise: SAXPY CUDA Fortran
 
-We have the following example. SAXPY code in CUDA Fortran. In this case to hipify the code, we follow this procedure.
+We have the following example. SAXPY code in CUDA Fortran. In this case, to hipify the code, we follow this procedure.
 
 ```bash=
 $ cd ${rootdir}/porting/codes/cuda_fortran_saxpy/cuda
@@ -1092,7 +1091,7 @@ __global__ void saxpy(float *y, float *x, float a, int n)
 
 ##### Observations
 
-* \__global__ means that the fucntion will be executed on the GPU and it will be called from the host
+* \__global__ means that the function will be executed on the GPU and it will be called from the host
 * In Fortran the variables such as  *blockDim%x* are used in C/C++ as *blockDim.x*. This means that you have to change all these variables but a find and replace through __sed__ could be easy
 * Using arrays also is different for example `y(i)` becomes `y[i]` which again __sed__ could help
 * Overall we need to be careful that we do not do any mistake, always check the results
@@ -1210,7 +1209,7 @@ submit sub.sh
 
 ## Gromacs
 
-Do not follow these instructions as it could take long time, they are documented to help you in your case
+Do not follow these instructions as it could take a long time, they are documented to help you in your case
 
 ### Download Gromacs and uncompress:
 ```bash=
@@ -1223,7 +1222,7 @@ admin  api  AUTHORS  build  cmake  CMakeLists.txt  computed_checksum  COPYING  C
 
 ### Hipify
 
-Let hipify the application automatically with the __hipconvertinplace-perl.sh__ script
+Let's hipify the application automatically with the __hipconvertinplace-perl.sh__ script
 ```bash=
 cd src
  hipconvertinplace-perl.sh . 
@@ -1327,7 +1326,7 @@ warning: unconverted cudaMemoryTypeHost : 1
 #### Solution:
 
 Check the files with the warnings:
-* For example the warning of cudaProfilerRun is not actual a serious issue as it is a vairable declared by the developers
+* For example the warning of cudaProfilerRun is not actually a serious issue as it is a variable declared by the developers
 ```bash
 static bool cudaProfilerRun
 ```
