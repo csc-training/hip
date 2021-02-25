@@ -14,7 +14,7 @@ lang:   en
 11:30 - 16:00 Hands-on sessions  
 
 # Disclaimer
-* AMD ecosystem is under ehave development
+* AMD ecosystem is under heavy development
 * All the experiments took place on NVIDIA V100 GPU (Puhti supercomputer)
 
 # Motivation/Challenges
@@ -296,7 +296,12 @@ hipError_t err = hipMemcpy(c,c_d,nBytes,hipMemcpyDeviceToHost);
 printf("%s ",hipGetErrorString(err));
 ```
 
-# Programming models
+# Hipify Gromacs
+
+* GROMACS is a well-known molecular dynamics package 
+* This is an effort to hipify and not to execute on na optimized environment
+* This showcases the procedure for a large application and possible issues
+* No effort to optimize the code
 
 
 
