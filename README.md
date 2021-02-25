@@ -20,7 +20,11 @@ Submitting jobs to Puhti: https://docs.csc.fi/computing/running/submitting-jobs/
 SLURM reservation for this training: _gpu_training_
 AMD porting guide: https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-porting-guide.html
 
+## Team
+Instructor: George Markomanolis
+Team: Fredrik Robertsen, Cristian-Vasile Achim, Jussi Enkovaara, Nicolino lo Gullo
 
+## Structure of the repository
 
 ```bash
 docs
@@ -32,8 +36,6 @@ porting
     ├── Heat-Equation
     ├── 2D Wave Propagation
     ├── KMeans clustering
-    ├── Madgraph 4 GPU (hipify procedure)
-    ├── Early demonstration of Gromacs (hipify procedure)
     └── Vector_addition
 
 ```
