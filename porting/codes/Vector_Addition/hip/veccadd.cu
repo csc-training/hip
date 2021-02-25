@@ -1,6 +1,6 @@
 #include "hip/hip_runtime.h"
 /*
-nvcc vecadd.cu
+hipcc vecadd.cu
 */
 #include <hip/hip_runtime.h>
 #include <stdio.h>
