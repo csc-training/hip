@@ -533,7 +533,7 @@ make
 sbatch sub.sh
 ```
 * Check the out* and error* files.
-*  
+
 The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/saxpy/hipblas_solution
 
 ### Lessons learned:
