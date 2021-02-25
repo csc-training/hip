@@ -94,7 +94,7 @@ lang:   en
 <div class="column">
 
 - <font size="5">Device Kernels:</font>
-    - <font size="5">\__globa__, \__device__, hipLaunchKernelGGL()</font>
+    - <font size="5">\__global__, \__device__, hipLaunchKernelGGL()</font>
 
 - <font size="5">Device code:</font>
     - <font size="5">threadIdx, blockIdx, blockDim, \__shared__</font>
