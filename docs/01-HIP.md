@@ -150,7 +150,7 @@ $ ls src/
 Makefile.am matMulAB.c matMulAB.c.prehip matMulAB.h matMul.c matMul.c.prehip
 ```
 
-No compilation took place, just convertion.
+No compilation took place, just conversion.
 
 # Hipify-perl (cont.)
 
