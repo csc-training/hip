@@ -16,6 +16,7 @@
 
 ## Important links
 Github repository: https://github.com/csc-training/hip
+Submitting jobs to Puhti: https://docs.csc.fi/computing/running/submitting-jobs/
 
 
 
@@ -27,7 +28,12 @@ porting
     ├── saxpy/cublas     
     ├── Discrete_Hankel_Transform
     ├── Heat-Equation
-    └── Early demonstration of Gromacs hipifying procedure
+    ├── 2D Wave Propagation
+    ├── KMeans clustering
+    ├── Madgraph 4 GPU (hipify procedure)
+    ├── Early demonstration of Gromacs (hipify procedure)
+    └── Vector_addition
+
 ```
 
 ## Puhti
@@ -35,33 +41,54 @@ porting
 ```bash
 ssh trainingXXX@puhti.csc.fi
 ```
-Give your password and you should be located in the directory:
+* Give your password and you should be located in the directory:
 ```bash=num
 /users/trainingXXX
-```
-### Load the appropriate modules
-
-```bash
-module load hip/4.0.0c
 ```
 
 ### Explore the environment
 
 ```bash=
-module list
+ module list
 
 Currently Loaded Modules:
-  1) StdEnv   2) gcc/9.1.0   3) cuda/11.1.0   4) hip/4.0.0c   5) intel-mkl/2019.0.4   6) hpcx-mpi/2.4.0
+  1) intel/19.0.4   2) hpcx-mpi/2.4.0   3) intel-mkl/2019.0.4   4) StdEnv
 ```
+### SLURM
+
+* Submit script sub.sh
+
+```bash
+sbatch sub.sh
+```
+
+* Check the status of a job
+
+```bash
+squeue -u $USER
+```
+
+* Cancel a job
+
+```bash
+scancel JOBID
+```
+
 
 ### HIP
 
 * Load HIP module
 ```bash
 module load hip/4.0.0c
+
+module list
+
+Currently Loaded Modules:
+  1) StdEnv   2) gcc/9.1.0   3) cuda/11.1.0   4) hip/4.0.0c   5) intel-mkl/2019.0.4   6) hpcx-mpi/2.4.0
 ```
 
-There is module also _hip/4.0.0_ but we call it _hip/4.0.0c_ a it is custom installation. It will change name in the future, including the version.
+There is also a module _hip/4.0.0_ but we created also one _hip/4.0.0c_ a it is installation from the source code. The name will comply with the version in the future.
+
 * hipconfig
  
 ```bash=
@@ -1181,8 +1208,6 @@ make
 submit sub.sh
 ```
 
-### CMAKE
-
 ## Gromacs
 
 Do not follow these instructions as it could take long time, they are documented to help you in your case
@@ -1415,6 +1440,145 @@ This is an example it does not mean that this is the best way
 CXX=/appl/opt/rocm/rocm-4.0.0/hip/bin/hipcc cmake -DGMX_GPU=CUDA ..
 make
 ```
+
+## CMAKE
+
+One cmake file, called `cmake/gmxManageNvccConfig.cmake` from Gromacs is the following:
+
+```cmake=
+#
+# This file is part of the GROMACS molecular simulation package.
+#
+# Copyright (c) 2012,2013,2014,2015,2016 by the GROMACS development team.
+# Copyright (c) 2017,2018,2019,2020, by the GROMACS development team, led by
+# Mark Abraham, David van der Spoel, Berk Hess, and Erik Lindahl,
+# and including many others, as listed in the AUTHORS file in the
+# top-level source directory and at http://www.gromacs.org.
+...
+# set up host compiler and its options
+if(CUDA_HOST_COMPILER_CHANGED)
+    set(CUDA_HOST_COMPILER_OPTIONS "")
+
+    if(APPLE AND CMAKE_C_COMPILER_ID MATCHES "GNU")
+        # Some versions of gcc-4.8 and gcc-4.9 have produced errors
+        # (in particular on OS X) if we do not use
+        # -D__STRICT_ANSI__. It is harmless, so we might as well add
+        # it for all versions.
+        list(APPEND CUDA_HOST_COMPILER_OPTIONS "-D__STRICT_ANSI__")
+    endif()
+
+    work_around_glibc_2_23()
+
+    set(CUDA_HOST_COMPILER_OPTIONS "${CUDA_HOST_COMPILER_OPTIONS}"
+        CACHE STRING "Options for nvcc host compiler (do not edit!).")
+
+    mark_as_advanced(CUDA_HOST_COMPILER CUDA_HOST_COMPILER_OPTIONS)
+endif()
+
+if (GMX_CUDA_TARGET_SM OR GMX_CUDA_TARGET_COMPUTE)
+    set(GMX_CUDA_NVCC_GENCODE_FLAGS)
+    set(_target_sm_list ${GMX_CUDA_TARGET_SM})
+    foreach(_target ${_target_sm_list})
+        list(APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_${_target},code=sm_${_target}")
+    endforeach()
+    set(_target_compute_list ${GMX_CUDA_TARGET_COMPUTE})
+    foreach(_target ${_target_compute_list})
+        list(APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_${_target},code=compute_${_target}")
+    endforeach()
+else()
+
+  if(CUDA_VERSION VERSION_LESS "11.0")
+        list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_30,code=sm_30")
+    endif()
+    list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_35,code=sm_35")
+...
+    list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_70,code=compute_70")
+    if(NOT CUDA_VERSION VERSION_LESS "10.0")
+        list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_75,code=compute_75")
+    endif()
+    if(NOT CUDA_VERSION VERSION_LESS "11.0")
+        list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_80,code=compute_80")
+    endif()
+endif()
+
+if((_cuda_nvcc_executable_or_flags_changed OR CUDA_HOST_COMPILER_CHANGED OR NOT GMX_NVCC_WORKS) AND NOT WIN32)
+    message(STATUS "Check for working NVCC/C++ compiler combination with nvcc '${CUDA_NVCC_EXECUTABLE}'")
+    execute_process(COMMAND ${CUDA_NVCC_EXECUTABLE} -ccbin ${CUDA_HOST_COMPILER} -c ${CUDA_NVCC_FLAGS} ${CUDA_NVCC_FLAGS_${_build_type}} ${CMAKE_SOURCE_DIR}/cmake/TestCUDA.cu
+        RESULT_VARIABLE _cuda_test_res
+        OUTPUT_VARIABLE _cuda_test_out
+        ERROR_VARIABLE  _cuda_test_err
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+...
+endif() # GMX_CHECK_NVCC
+
+macro(GMX_SET_CUDA_NVCC_FLAGS)
+    set(CUDA_NVCC_FLAGS "${GMX_CUDA_NVCC_FLAGS};${CUDA_NVCC_FLAGS}")
+endmacro()
+
+
+function(gmx_cuda_add_library TARGET)
+    add_definitions(-DHAVE_CONFIG_H)
+    # Source files generated by NVCC can include gmxmpi.h, and so
+    # need access to thread-MPI.
+    include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/src/external/thread_mpi/include)
+    # Source files can also contain topology related files and need access to
+    # the remaining external headers
+    include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/src/external)
+
+    # Now add all the compilation options
+    gmx_cuda_target_compile_options(CUDA_${TARGET}_CXXFLAGS)
+    list(APPEND CMAKE_CXX_FLAGS ${CUDA_${TARGET}_CXXFLAGS})
+    foreach(build_type ${build_types_with_explicit_flags})
+        list(APPEND CMAKE_CXX_FLAGS_${build_type} ${CUDA_${TARGET}_CXXFLAGS_${build_type}})
+    endforeach()
+
+    cuda_add_library(${TARGET} ${ARGN})
+endfunction()
+
+```
+
+### Hipify
+
+```bash=
+hipify-cmakefile cmake/gmxManageNvccConfig.cmake > cmake/gmxManageHipConfig.cmake
+ warning: cmake/gmxManageNvccConfig.cmake:#38 : unsupported macro/option : # - use the CUDA_HOST_COMPILER if defined by the user, otherwise
+ warning: cmake/gmxManageNvccConfig.cmake:#39 : unsupported macro/option : # - check if nvcc works with CUDA_HOST_COMPILER and the generated nvcc and C++ flags
+ warning: cmake/gmxManageNvccConfig.cmake:#42 : unsupported macro/option : #   * CUDA_HOST_COMPILER_OPTIONS    - the full host-compiler related option list passed to nvcc
+ warning: cmake/gmxManageNvccConfig.cmake:#44 : unsupported macro/option : # Note that from CMake 2.8.10 FindCUDA defines CUDA_HOST_COMPILER internally,
+ warning: cmake/gmxManageNvccConfig.cmake:#59 : unsupported macro/option :         list(APPEND CUDA_HOST_COMPILER_OPTIONS "-D_FORCE_INLINES")
+ warning: cmake/gmxManageNvccConfig.cmake:#60 : unsupported macro/option :         set(CUDA_HOST_COMPILER_OPTIONS ${CUDA_HOST_COMPILER_OPTIONS} PARENT_SCOPE)
+ warning: cmake/gmxManageNvccConfig.cmake:#64 : unsupported macro/option : gmx_check_if_changed(CUDA_HOST_COMPILER_CHANGED CUDA_HOST_COMPILER)
+ warning: cmake/gmxManageNvccConfig.cmake:#67 : unsupported macro/option : if(CUDA_HOST_COMPILER_CHANGED)
+ warning: cmake/gmxManageNvccConfig.cmake:#68 : unsupported macro/option :     set(CUDA_HOST_COMPILER_OPTIONS "")
+ warning: cmake/gmxManageNvccConfig.cmake:#75 : unsupported macro/option :         list(APPEND CUDA_HOST_COMPILER_OPTIONS "-D__STRICT_ANSI__")
+ warning: cmake/gmxManageNvccConfig.cmake:#80 : unsupported macro/option :     set(CUDA_HOST_COMPILER_OPTIONS "${CUDA_HOST_COMPILER_OPTIONS}"
+ warning: cmake/gmxManageNvccConfig.cmake:#83 : unsupported macro/option :     mark_as_advanced(CUDA_HOST_COMPILER CUDA_HOST_COMPILER_OPTIONS)
+ warning: cmake/gmxManageNvccConfig.cmake:#178 : unsupported macro/option : list(APPEND GMX_CUDA_NVCC_FLAGS "${CUDA_HOST_COMPILER_OPTIONS}")
+ warning: cmake/gmxManageNvccConfig.cmake:#210 : unsupported macro/option : if((_cuda_nvcc_executable_or_flags_changed OR CUDA_HOST_COMPILER_CHANGED OR NOT GMX_NVCC_WORKS) AND NOT WIN32)
+ warning: cmake/gmxManageNvccConfig.cmake:#212 : unsupported macro/option :     execute_process(COMMAND ${CUDA_NVCC_EXECUTABLE} -ccbin ${CUDA_HOST_COMPILER} -c ${HIP_NVCC_FLAGS} ${HIP_NVCC_FLAGS_${_build_type}} ${CMAKE_SOURCE_DIR}/cmake/TestCUDA.cu
+```
+
+The new cmake looks like:
+
+```cmake=
+ if(HIP_VERSION VERSION_LESS "11.0")
+        list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_30,code=sm_30")
+    endif()
+    list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-gencode;arch=compute_35,code=sm_35")
+ ...
+    if(NOT HIP_VERSION VERSION_LESS "11.0")
+        # Requesting sm or compute 35, 37, or 50 triggers deprecation messages with
+        # nvcc 11.0, which we need to suppress for use in CI
+        list (APPEND GMX_CUDA_NVCC_GENCODE_FLAGS "-Wno-deprecated-gpu-targets")
+    endif()    
+    ...
+    macro(GMX_SET_CUDA_NVCC_FLAGS)
+    set(HIP_NVCC_FLAGS "${GMX_CUDA_NVCC_FLAGS};${HIP_NVCC_FLAGS}")
+endmacro()
+```
+
+* The tool will be improved and also probably you can add more variables using the file: /appl/opt/rocm/rocm-4.0.0c/hip/bin/hipify-cmakefile
 
 ## Exercises
 
