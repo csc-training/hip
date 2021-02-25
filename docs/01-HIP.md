@@ -154,7 +154,7 @@ No compilation took place, just convertion.
 
 # Hipify-perl (cont.)
 
-The hipify-perl will return a report for each file, and it looks like this:
+The hipify-perl will return a report for each file with the option `--print-stats`, and it looks like this:
 ```bash
 info: TOTAL-converted 53 CUDA->HIP refs ( error:0 init:0 version:0 device:1 ... library:16
 ... numeric_literal:12 define:0 extern_shared:0 kernel_launch:0 )
@@ -267,8 +267,6 @@ not support it.
 * Quite a lot of changes for such a small code.
 * Should we try to use OpenMP offload before we try to HIP the code?
 * Need to adjust Makefile to compile the multiple files
-* The HIP version is up to 30% faster, seems to be a comparison between nvcc and
-pgf90, still checking to verify some results
 * Example of Fortran with HIP: https://github.com/cschpc/lumi/tree/main/hipfort
 
 # OpenMP or HIP
