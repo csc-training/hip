@@ -26,7 +26,7 @@ lang:   en
 ![](img/lumi.png){ .center width=77% }
 
 # AMD GPUs (Mi100 example)
-![](img/amd_architecture.png){ .center width=77% }
+![](img/amd_architecture.png){ .center width=72% }
 
 # Differences between HIP and CUDA
 * AMD GCN hardware wavefronts size is 64 (warp on CUDA is 32)
@@ -34,7 +34,7 @@ lang:   en
 * Shared memory and registers per thread can differ between AMD and NVIDIA hardware
 
 # ROCm
-![](img/rocm.png){ .center width=67% }
+![](img/rocm.png){ .center width=60% }
 
 # ROCm Installation
 * Many components need to be installed
@@ -111,9 +111,18 @@ lang:   en
 |-------|------------|---------|-------------------------------|-----------------------------------|
 |hipStreamSynchronize|host waits for all commands in the specified stream| system-scope release| yes|yes|
 |hipDeviceSynchronize|host waits for all commands across all streams of the device|system-scope release|yes|yes|
+</small>
+
+
+# HIP Host memory visibility (cont.)
+<small>
+
+|HIP API|Synchronization     effect|Fence    |Coherent Host Memory Visibility|Non-coherent Host Memory Visibility|
+|-------|------------|---------|-------------------------------|-----------------------------------|
 |hipEventSynchronize|host waits for specified event to complete|device-scope release|yes|depends|
 |hipStreamWaitEvent|stream waits for specified event|none|yes|no|
 </small>
+
 
 # Libraries
 
@@ -185,7 +194,22 @@ matMulAB.c:21:10: fatal error: hipblas.h: No such file or directory 21 | #includ
 
 2) Install HipBLAS library 
 
-3) Compile again and the binary is ready. When the HIP is on NVIDIA hardware with extension __.cpp__, then use the option "-x cu" after hipcc
+3) Compile again and the binary is ready. When the HIP is on NVIDIA hardware with extension __.cpp__, then use the option "--x cu" after hipcc
+
+# Megahip
+
+* https://github.com/zjin-lcf/oneAPI-DirectProgramming
+* 115 Applications/Examples with CUDA, SYCL, OpenMP offload and HIP
+* Testing hipify tool, create a megahip script to convert all the CUDA examples to HIP
+* ./megahip.sh
+<small>
+	* 3287 CUDA calls were converted to HIP
+	* 115 applications totally 45692 lines of code, there are warnings for 4 of them, there are totally 24 warnings that something was wrong, check warnings.txt
+	* Application Success (when bug* is fixed) 96.5217
+	* Conversion Success (when bug* is fixed) 99.2699
+</small>
+
+\* https://github.com/ROCm-Developer-Tools/HIPIFY/issues/246
 
 # Hipify-clang
 
@@ -208,10 +232,9 @@ CODE CHANGED (in lines) %: 1
 
 # Benchmark MatMul OpenMP oflload
 
-Use the benchmark https://github.com/pc2/OMP-Offloading for testing purposes,
+* Use the benchmark https://github.com/pc2/OMP-Offloading for testing purposes,
 matrix multiplication of 2048 x 2048
 
-* All the CUDA calls were converted and it was linked with hipBlas among also OpenMP offload
 * CUDA
 ```bash
 matMulAB (11) : 1001.2 GFLOPS 11990.1 GFLOPS maxabserr = 0.0
@@ -253,10 +276,10 @@ not support it.
 
 * We need to use hipfort, a Fortran interface library for GPU kernel
 * Steps:
-1) We write the kernels in a new C++ file
-2) Wrap the kernel launch in a C function
-3) Use Fortran 2003 C binding to call the C function
-4) Things could change
+	1) We write the kernels in a new C++ file
+	2) Wrap the kernel launch in a C function
+	3) Use Fortran 2003 C binding to call the C function
+	4) Things could change
 * Use OpenMP offload to GPUs
 
 # Fortran SAXPY example
