@@ -334,5 +334,5 @@ printf("%s ",hipGetErrorString(err));
 
 # Hands-on Demonstration { .center }
 
-
-
+* View instructions: https://hackmd.io/okbEtY7iTYaCJjkg-EZh1Q
+* Ask question (at the end of the document below the feedback title): https://hackmd.io/okbEtY7iTYaCJjkg-EZh1Q?both
