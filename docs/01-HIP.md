@@ -317,13 +317,19 @@ hipError_t err = hipMemcpy(c,c_d,nBytes,hipMemcpyDeviceToHost);
 printf("%s ",hipGetErrorString(err));
 ```
 
+# Programming Models
+
+* OpenACC will be probably available through the GCC as Mentor Graphics (now called Siemens EDA) is developing the OpenACC integration
+
+* Kokkos, Raja, Alpaka, and SYCL should be able to be used on LUMI but they do not support all the programming languages
+
+
 # Hipify Gromacs
 
-* GROMACS is a well-known molecular dynamics package 
-* This is an effort to hipify and not to execute on na optimized environment
+* GROMACS is a well-known molecular dynamics package
+* This is an effort to hipify and not to execute on an optimized environment
 * This showcases the procedure for a large application and possible issues
 * No effort to optimize the code
-
 
 
 # Hands-on Demonstration { .center }
