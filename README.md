@@ -22,7 +22,7 @@ AMD porting guide: https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-por
 
 ## Team
 Instructor: George Markomanolis
-Team: Fredrik Robertsen, Cristian-Vasile Achim, Jussi Enkovaara, Nicolino lo Gullo
+Team: Cristian-Vasile Achim, Jussi Enkovaara, Fredrik Robertsen, Nicolino lo Gullo
 
 ## Structure of the repository
 
@@ -186,13 +186,13 @@ export HIPCC_VERBOSE=1
 ```
 
 * For example, on Puhti, the command:
-```bash=
+```bash
 hipcc "--gpu-architecture=sm_70" -g -O3 -I../common -c core_cuda.cu -o core_cuda.o
 ```
 
 would also print the command that was actually executed:
 
-```bash=
+```bash
 hipcc-cmd: /appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2//bin/nvcc -D__HIP_ROCclr__ -Wno-deprecated-gpu-targets  -isystem /appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2//include -isystem /appl/opt/rocm/rocm-4.0.0c/hip/include  --gpu-architecture=sm_70 -g -O3 -I../common -c core_cuda.cu -o core_cuda.o
 ```
 
@@ -246,7 +246,7 @@ SAXPY is used for Single-Precision A*X Plus Y. It combines a scalar multiplicati
 ```bash 
 cd ${rootdir}/porting/codes/saxpy/cuda
 ```
-##### Check the file with an editor 
+##### Check the file saxpy.cu  with an editor 
 
 ```c=
 #include <stdio.h>
@@ -318,7 +318,7 @@ cd ../hip
 * Examine the hipify procedure
 
 ```bash= 
-module load hip/4.0.0
+module load hip/4.0.0c
 hipexamine-perl.sh saxpy.cu
 
   info: converted 14 CUDA->HIP refs ( error:0 init:0 version:0 device:0 context:0 module:0 memory:7 virtual_memory:0 addressing:0 stream:0 event:0 external_resource_interop:0 stream_memory:0 execution:0 graph:0 occupancy:0 texture:0 surface:0 peer:0 graphics:0 profiler:0 openGL:0 D3D9:0 D3D10:0 D3D11:0 VDPAU:0 EGL:0 thread:0 complex:0 library:0 device_library:0 device_function:3 include:0 include_cuda_main_header:0 type:0 literal:0 numeric_literal:3 define:0 extern_shared:0 kernel_launch:1 )
@@ -407,6 +407,7 @@ make clean
 make
 ```
 
+
 * Submit
 
 ```bash 
@@ -417,6 +418,87 @@ Check the files out_* and error_*
 The error output includes the duration for the execution which is close to 7.32 seconds and the out_* file includes the max error which should be 0. The overhead seems to be close to 3%.
 
 The solution is here: https://github.com/csc-training/hip/tree/main/porting/codes/saxpy/hip_solution
+
+##### If you want to chance the .cu file to .cpp
+
+```bash
+mv saxpy.cu saxpy.cpp
+```
+
+* Edit Makefile
+
+    * HIP Makefile with .cu
+
+```cmake=
+# Compiler can be set below, or via environment variable
+CC        = hipcc
+OPTIMIZE  = yes
+#
+#===============================================================================
+# Program name & source code list
+#===============================================================================
+program = saxpy
+source = saxpy.cu
+obj = $(source:.cu=.o)
+#===============================================================================
+# Sets Flags
+#===============================================================================
+# Standard Flags
+CFLAGS := -Xcompiler -Wall
+# Linker Flags
+LDFLAGS =
+# Optimization Flags
+ifeq ($(OPTIMIZE),yes)
+  CFLAGS += -O3
+endif
+
+#===============================================================================
+# Targets to Build
+#===============================================================================
+#
+$(program): $(obj) Makefile
+        $(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
+
+%.o: %.cu Makefile
+        $(CC) $(CFLAGS) -c $< -o $@
+```
+    * HIP Makefile with .cpp
+
+```cmake=
+# Compiler can be set below, or via environment variable
+CC        = hipcc
+HIP_CU    = hipcc --x cu
+OPTIMIZE  = yes
+#
+#===============================================================================
+# Program name & source code list
+#===============================================================================
+program = saxpy
+source = saxpy.cpp
+obj = $(source:.cpp=.o)
+#===============================================================================
+# Sets Flags
+#===============================================================================
+# Standard Flags
+CFLAGS := -Xcompiler -Wall
+# Linker Flags
+LDFLAGS =
+# Optimization Flags
+ifeq ($(OPTIMIZE),yes)
+  CFLAGS += -O3
+endif
+
+#===============================================================================
+# Targets to Build
+#===============================================================================
+#
+$(program): $(obj) Makefile
+        $(CC) $(CFLAGS) $(obj) -o $@ $(LDFLAGS)
+
+%.o: %.cpp Makefile
+        $(HIP_CU) $(CFLAGS) -c $< -o $@
+
+```
 
 ### Lessons learned:
 
@@ -1644,6 +1726,8 @@ endmacro()
 ```
 
 * The tool will be improved and also probably you can add more variables using the file: /appl/opt/rocm/rocm-4.0.0c/hip/bin/hipify-cmakefile
+
+Also there will be many improvements regarding CMake https://github.com/ROCm-Developer-Tools/HIP/issues/2158#issuecomment-737222202 
 
 ## Exercises
 
