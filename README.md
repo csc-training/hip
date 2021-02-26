@@ -23,6 +23,7 @@
 
 ## Team
 Instructor: George Markomanolis
+
 Team: Cristian-Vasile Achim, Jussi Enkovaara, Fredrik Robertsen, Nicolino lo Gullo
 
 ## Structure of the repository
