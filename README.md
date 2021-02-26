@@ -22,6 +22,7 @@ AMD porting guide: https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-por
 
 ## Team
 Instructor: George Markomanolis
+
 Team: Cristian-Vasile Achim, Jussi Enkovaara, Fredrik Robertsen, Nicolino lo Gullo
 
 ## Structure of the repository
