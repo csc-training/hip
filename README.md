@@ -16,8 +16,8 @@
 
 ## Important Information
 * Github repository: https://github.com/csc-training/hip
-* Submitting jobs to Puhti: https://docs.csc.fi/computing/running/submitting-jobs/
-* SLURM reservation for this training: _gpu_training_
+* [Using Puhti](using-puhti.md)
+* SLURM reservation for this training: _hip101_
 * AMD porting guide: https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-porting-guide.html
 * AMD ROCm documentation: https://rocmdocs.amd.com/en/latest/
 
