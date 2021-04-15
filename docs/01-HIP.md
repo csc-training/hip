@@ -348,6 +348,13 @@ printf("%s ",hipGetErrorString(err));
 * Kokkos, Raja, Alpaka, and SYCL should be able to be used on LUMI but they do not support all the programming languages
 
 
+# Programming Models on Mi100
+
+![](img/mi100.png){ .center width=70% }
+
+* Tuned the HIP threads per block and OpenMP pragmas for appropriate number of teams and threads per team
+
+
 # Hipify Gromacs
 
 * GROMACS is a well-known molecular dynamics package
@@ -358,5 +365,5 @@ printf("%s ",hipGetErrorString(err));
 
 # Hands-on Demonstration { .center }
 
-* View instructions: https://hackmd.io/okbEtY7iTYaCJjkg-EZh1Q
-* Ask question (at the end of the document below the feedback title): https://hackmd.io/okbEtY7iTYaCJjkg-EZh1Q?both
+* View instructions: https://hackmd.io/SMerEhhURMeKfgTzWxHrHQ?view
+* Ask question (at the end of the document below the "Questions, answers and more"): https://hackmd.io/SMerEhhURMeKfgTzWxHrHQ?both
