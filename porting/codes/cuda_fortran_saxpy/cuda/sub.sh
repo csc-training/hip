@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=example
-#SBATCH --account=4training
-#SBATCH --reservation=gpu_training
+#SBATCH --account=project_2000745
+#SBATCH --reservation=hip101
 #SBATCH --partition=gpu
 #SBATCH --time=00:02:00
 #SBATCH -e error_%j
