@@ -1,30 +1,71 @@
-# HIP 101 Porting CUDA codes to HIP
-### 26 February 2021
+# ENCCS/CSC HIP101 workshop - Porting CUDA codes to HIP
+#### April 16 2021
 
+## Important links
+
+This page: https://hackmd.io/@enccs/hip101-april2021
+Workshop page: https://enccs.se/events/2021/04/hip101-workshop/
+Github repository: https://github.com/csc-training/hip
+Using Puhti: https://github.com/csc-training/hip/blob/main/using-puhti.md
+SLURM reservation for this training: _hip101_
+AMD porting guide: https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-porting-guide.html
+AMD ROCm documentation: https://rocmdocs.amd.com/en/latest/
+
+
+### Instructor
+
+- [George Markomanolis](http://www.markomanolis.com/site/index.html)
+
+### Helpers
+
+- Artem Zhmurov
+- Mark Abraham
+- Roberto Di Remigio
+- Xin Li
+- Qiang Li
+
+---
+
+## Code of conduct
+
+We strive to follow the Code of Conduct developed by The Carpentries organisation to foster a welcoming environment for everyone (see https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html). In short:
+- Use welcoming and inclusive language
+- Be respectful of different viewpoints and experiences
+- Gracefully accept constructive criticism
+- Focus on what is best for the community
+- Show courtesy and respect towards other community members
+
+---
+
+:::danger
+At the bottom of this document you can ask questions about the workshop content! We use the Zoom chat only for reporting Zoom problems and such.
+:::
+
+---
 
 ## Schedule
 
 
-| Time (in CET) | Topic |
-| ---- | --- |
-| 09:00 - 10:00 | Introduction to AMD architecture and HIP| 
-| 10:00 - 10:15 | Break | 
-| 10:15 - 10:45 | Deep dive to Hipify tools and examples | 
-| 10:45 - 11:30 | Lunch | 
-| 11:30 - 16:00 | Hands-on sessions | 
+| Time | Topic |
+| ---- | ----- |
+| 09:00–10:00 | Introduction to AMD architecture, HIP, and Hipify tools |
+| 10:00–10:15 | Break |
+| 10:15-10:45 | Deep dive to Hipify tools and examples |
+| 10:45-11:30 | Lunch |
+| 11:30-12:10 | Hands-on sessions |
+| 12:10-12:20 | Break |
+| 12:20-12:40 | GROMACS and CMake | 
+| 12:40-13:00 | Hands-on sessions - test your own code if you want | 
+
+---
+
+## Icebreaker question
+
+If you tomorrow got access to 10x larger computational resources than you currently have, would you be able to take advantage of it? If so, how?
 
 
-## Important Information
-* Github repository: https://github.com/csc-training/hip
-* [Using Puhti](using-puhti.md)
-* SLURM reservation for this training: _hip101_
-* AMD porting guide: https://rocmdocs.amd.com/en/latest/Programming_Guides/HIP-porting-guide.html
-* AMD ROCm documentation: https://rocmdocs.amd.com/en/latest/
 
-## Team
-Instructor: George Markomanolis
-
-Team: Cristian-Vasile Achim, Jussi Enkovaara, Fredrik Robertsen, Nicolino lo Gullo
+---
 
 ## Structure of the repository
 
@@ -42,10 +83,214 @@ porting
 
 ```
 
-## Using Puhti
 
-[Instructions for using Puhti](using-puhti.md)
+## Puhti
 
+### Please use the pre-assigned account:
+
+- trainingXXX: NAME
+- training018 :	Cristian-Vasile A.
+- training019 :	Xavier A.
+- training020 :	Farid A.
+- training021 :	Arash Alizad B.
+- training022 :	Abdulrahman Azab M.
+- training023 :	Markus B.
+- training024 :	Oscar Bulancea L.
+- training025 :	Wei Der C.
+- training026 :	Gibson C.
+- training027 :	Robert C.
+- training028 :	Marco Crialesi E.
+- training029 :	Tewodros D.
+- training030 :	Yaxing D.
+- training031 :	Pascal H.
+- training032 :	Johan H.
+- training033 :	Patric H.
+- training034 :	Chia-Jung H.
+- training035 :	Zuhair I.
+- training036 :	Niclas J.
+- training037 :	Esko J.
+- training038 :	Joe J.
+- training039 :	Bijoy J.
+- training040 :	Kimmo K.
+- training041 :	Umair K.
+- training042 :	Tuomas K.
+- training043 :	Oskar L.
+- training044 :	Ashenafi L.
+- training045 :	Qiang L.
+- training046 :	Floriano M.
+- training047 :	Talgat M.
+- training048 :	Anders M.
+- training049 :	Meghdoot M.
+- training050 :	Gnanavel M.
+- training051 :	Pedro O.
+- training052 :	Johannes P.
+- training053 :	Janne P.
+- training054 :	Chaitanya P.
+- training055 :	Jarno R.
+- training056 :	Zilvinas R.
+- training057 :	Tuomas R.
+- training058 :	Kari R.
+- training059 :	Assa Aravindh S.
+- training060 :	Nicolo S.
+- training061 :	Suraj S.
+- training062 :	Pedro Simoes C.
+- training063 :	Samuele S.
+- training064 :	Pascal S.
+- training065 :	Ronith S.
+- training066 :	Walter T.
+- training067 :	Fedor U.
+- training068 :	Olav V.
+- training069 :	Masi V.
+- training070 :	Henric Z.
+- training071 :	Hongyang Z.
+
+
+
+
+
+### Connect to Puhti
+```bash
+ssh trainingXXX@puhti.csc.fi
+```
+* Give your password and you should be located in the directory:
+```bash=num
+/users/trainingXXX
+```
+
+### Explore the environment
+
+```bash=
+ module list
+
+Currently Loaded Modules:
+  1) intel/19.0.4   2) hpcx-mpi/2.4.0   3) intel-mkl/2019.0.4   4) StdEnv
+```
+### SLURM
+
+* Submit script `sub.sh`
+
+```bash
+sbatch sub.sh
+```
+
+* Check the status of a job
+
+```bash
+squeue -u $USER
+```
+
+* Cancel a job
+
+```bash
+scancel JOBID
+```
+
+* Sample batch job script
+
+```bash=
+#!/bin/bash
+#SBATCH --job-name=hip_test
+#SBATCH --account=project_2000745
+#SBATCH --partition=gpu
+#SBATCH --time=00:05:00
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=8000
+#SBATCH --gres=gpu:v100:1
+#SBATCH --reservation=gpu_training
+
+module load hip
+
+srun my_hip_program
+```
+
+### HIP
+
+* Load HIP module
+```bash
+module load hip/4.0.0c
+
+module list
+
+Currently Loaded Modules:
+  1) StdEnv   2) gcc/9.1.0   3) cuda/11.1.0   4) hip/4.0.0c   5) intel-mkl/2019.0.4   6) hpcx-mpi/2.4.0
+```
+
+There is also a module _hip/4.0.0_ but we created also one _hip/4.0.0c_ which is an installation from the source code. The name will comply with the version in the future.
+
+* hipconfig
+ 
+```bash=
+hipconfig
+
+HIP version  : 4.0.20496-4f163c6
+
+== hipconfig
+HIP_PATH     : /appl/opt/rocm/rocm-4.0.0c/hip
+ROCM_PATH    : /appl/opt/rocm/rocm-4.0.0c/
+HIP_COMPILER : clang
+HIP_PLATFORM : nvcc
+HIP_RUNTIME  : ROCclr
+CPP_CONFIG   :  -D__HIP_PLATFORM_NVCC__=  -I/appl/opt/rocm/rocm-4.0.0c/hip/include -I/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2//include
+
+== nvcc
+nvcc: NVIDIA (R) Cuda compiler driver
+Copyright (c) 2005-2020 NVIDIA Corporation
+Built on Tue_Sep_15_19:10:02_PDT_2020
+Cuda compilation tools, release 11.1, V11.1.74
+Build cuda_11.1.TC455_06.29069683_0
+
+=== Environment Variables
+PATH=/appl/opt/rocm/rocm-4.0.0c/hip/bin:/appl/spack/install-tree/gcc-9.1.0/hwloc-2.0.2-wqrgpf/bin:/appl/opt/ucx/1.9.0-cuda/bin:/appl/spack/install-tree/gcc-9.1.0/openmpi-4.0.5-ym53tz/bin:/appl/spack/install-tree/gcc-9.1.0/hdf5-1.12.0-wtlera/bin:/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2/bin:/appl/spack/install-tree/gcc-4.8.5/gcc-9.1.0-vpjht2/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/appl/bin:/users/markoman/.local/bin:/users/markoman/bin
+CUDA_PATH=/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2/
+HIPFORT_ARCH=nvptx
+HIP_PLATFORM=nvcc
+LD_LIBRARY_PATH=/appl/opt/rocm/rocm-4.0.0c/hip/lib:/appl/spack/install-tree/gcc-9.1.0/hwloc-2.0.2-wqrgpf/lib:/appl/opt/ucx/1.9.0-cuda/lib:/appl/spack/install-tree/gcc-9.1.0/openmpi-4.0.5-ym53tz/lib:/appl/spack/install-tree/gcc-9.1.0/hdf5-1.12.0-wtlera/lib:/appl/opt/cluster_studio_xe2019/compilers_and_libraries_2019.4.243/linux/tbb/lib/intel64_lin/gcc4.7:/appl/opt/cluster_studio_xe2019/compilers_and_libraries_2019.4.243/linux/compiler/lib/intel64_lin:/appl/opt/cluster_studio_xe2019/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64_lin:/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2/lib64:/appl/spack/install-tree/gcc-4.8.5/gcc-9.1.0-vpjht2/lib64:/appl/spack/install-tree/gcc-4.8.5/gcc-9.1.0-vpjht2/lib:/appl/opt/rocm/rocm-4.0.0/hiprand/lib:/appl/opt/rocm/rocm-4.0.0c/hipblas/hipblas/lib
+HIP_RUNTIME=ROCclr
+HIPFORT_GPU=sm_70
+CUDA_INSTALL_ROOT=/appl/spack/install-tree/gcc-9.1.0/cuda-11.1.0-vvfuk2
+HIPFORT_HOME=/appl/opt/rocm/rocm-4.0.0c//hipfort/
+HIPFORT_ARCHGPU=nvptx-sm_70
+HIPCC_OPTS=--x cu
+HIP_COMPILER=clang
+HIP_PATH=/appl/opt/rocm/rocm-4.0.0c/hip
+
+== Linux Kernel
+Hostname     : puhti-login1.bullx
+Linux puhti-login1.bullx 3.10.0-1062.33.1.el7.x86_64 #1 SMP Thu Aug 13 10:55:03 EDT 2020 x86_64 x86_64 x86_64 GNU/Linux
+LSB Version:	:core-4.1-amd64:core-4.1-noarch
+Distributor ID:	RedHatEnterpriseServer
+Description:	Red Hat Enterprise Linux Server release 7.7 (Maipo)
+Release:	7.7
+Codename:	Maipo
+```
+
+* The wrapper to compile on NVIDIA system is called _hipcc_
+
+```bash=
+ which hipcc
+/appl/opt/rocm/rocm-4.0.0c/hip/bin/hipcc
+```
+* You can read the file _/appl/opt/rocm/rocm-4.0.0c/hip/bin/hipcc_ for more information
+
+```bash=
+hipcc -h
+
+Usage  : nvcc [options] <inputfile>
+
+Options for specifying the compilation phase
+============================================
+More exactly, this option specifies up to which stage the input files must be compiled,
+according to the following compilation trajectories for different input file types:
+        .c/.cc/.cpp/.cxx : preprocess, compile, link
+        .o               : link
+        .i/.ii           : compile, link
+        .cu              : preprocess, cuda frontend, PTX assemble,
+                           merge with host C code, compile, link
+        .gpu             : cicc compile into cubin
+        .ptx             : PTX assemble into cubin.
+
+```
 
 ## Porting CUDA codes to HIP
 
@@ -191,7 +436,7 @@ The error output includes the duration for the execution which is close to 7.1 s
 #### Hipify
 
 ```bash 
-cp Makefile saxpy.cu ../hip/
+cp Makefile saxpy.cu sub.sh ../hip/
 cd ../hip
 ```
 
@@ -565,7 +810,7 @@ Description: https://github.com/csc-training/hip/tree/main/porting/codes/Discret
 
 #### Steps
 ```bash 
-cd ${rootdir}porting/codes/Discrete_Hankel_Transform/cuda
+cd ${rootdir}/porting/codes/Discrete_Hankel_Transform/cuda
 ```
 
 ##### Compile and Execute
@@ -591,7 +836,7 @@ $ hipexamine-perl.sh Code.cu
   hipMemcpyDeviceToHost 2
   hipMemset 1
 
-$ hipify-perl -inplace Code.cu 
+$ hipify-perl --inplace Code.cu 
 
 $ ls
 bessel_zeros.in  Code.cu  Code.cu.prehip  README.md  sub.sh
@@ -1609,7 +1854,7 @@ endmacro()
 
 Also there will be many improvements regarding CMake https://github.com/ROCm-Developer-Tools/HIP/issues/2158#issuecomment-737222202 
 
-## Exercises
+## Optional exercises
 
 ### Vector Addition
 
@@ -1624,5 +1869,17 @@ Also there will be many improvements regarding CMake https://github.com/ROCm-Dev
 
 - In CUDA, `__CUDACC__` is defined by `nvcc`, but the HIP equivalent `__HIPCC__` is defined in `hip_runtime.h`. Thus, if code uses `__CUDACC__` without `#include <cuda_runtime_api.h>`, one needs to add manually `#include <hip_runtime.h>` to have the automatically converted `__HIPCC__` to get defined. [Issue in Github](https://github.com/ROCm-Developer-Tools/HIP/issues/29)
 
-### Feedback:
+
+## Questions, answers and notes
+
+- question
+    - answer
+
+
+
+
+---
+:::info
+*Always ask questions at the very bottom of this document, right above this.*
+:::
 
