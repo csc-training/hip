@@ -1,7 +1,7 @@
 ---
 title:  HIP101 Porting CUDA codes to HIP
 author: CSC - IT Center for Science
-date:   2021-02
+date:   2021-04
 lang:   en
 ---
 
@@ -11,7 +11,9 @@ lang:   en
 10:00 - 10:15 Break  
 10:15 - 10:45 Deep dive to Hipify tools and examples  
 10:45 - 11:30 Lunch  
-11:30 - 16:00 Hands-on sessions  
+11:30 - 12:10 Hands-on sessions  
+12:10 - 12:20 Break  
+12:20 - 13:00 Hands-on sessions  
 
 # Disclaimer
 * AMD ecosystem is under heavy development
@@ -20,7 +22,7 @@ lang:   en
 # Motivation/Challenges
 * LUMI will have AMD GPUs
 * Need to learn how to port codes on AMD ecosystem
-* Not yet access to AMD GPUs
+* Most of the material was prepared while there was no access to AMD hardware
 
 # LUMI
 ![](img/lumi.png){ .center width=77% }
@@ -256,7 +258,29 @@ AllPairs_N2
 hipMemcpyDeviceToHost, hipLaunchKernelGGL, hipDeviceSynchronize, hip_runtime...
 * 32768 number of small particles, 2000 time steps
 * CUDA execution time: 68.5 seconds
-* HIP execution time: 70.1 seconds, ~2.33% overhead
+* HIP execution time (on V100): 70.1 seconds, ~2.33% overhead
+
+# N-BODY Simulation on Mi100
+
+* CUDA execution time: 68.5 seconds
+* HIP execution time (on V100): 70.1 seconds, ~2.33% overhead
+* HIP execution time on Mi100: 95.57 seconds, 39.5% worse performance than V100
+
+# N-BODY Simulation on Mi100
+
+* CUDA execution time: 68.5 seconds
+* HIP execution time (on V100): 70.1 seconds, ~2.33% overhead
+* HIP execution time on Mi100: 95.57 seconds, 39.5% worse performance than V100
+* Change the threads per workgroup from 1024 to 256
+
+```
+hipLaunchKernelGGL(interactBodies, dim3(nBlocks), dim3(1024), ...);
+
+hipLaunchKernelGGL(interactBodies, dim3(nBlocks), dim3(256), ...);
+```
+
+* HIP execution time on Mi100: 54.32 seconds, 26.1% better performance than V100
+
 
 # Fortran
 
